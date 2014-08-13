@@ -5,7 +5,8 @@ The initial README for group 14's COMP30022 project, Fleet Commander.
 
 The project has been set-up using Android studio, and thus the steps to get set up are as follows:
 
-Via CLI:
+**Via CLI:**
+
 -Navigate to the directory in which you want to store the project
 
 -"git init"
@@ -14,7 +15,7 @@ Via CLI:
 
 -"git pull -u origin development"
 
-Via Android Studio:
+**Via Android Studio:**
 
 -Via the menu: File->Import Project
 
