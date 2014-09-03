@@ -1,4 +1,4 @@
-package com.project.jaja.fleetcommandar.util;
+package com.project.jaja.fleetcommander.util;
 
 import android.app.Activity;
 import android.os.Build;

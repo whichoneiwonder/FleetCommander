@@ -1,4 +1,4 @@
-package com.project.jaja.fleetcommandar;
+package com.project.jaja.fleetcommander;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

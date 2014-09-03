@@ -1,6 +1,6 @@
-package com.project.jaja.fleetcommandar;
+package com.project.jaja.fleetcommander;
 
-import com.project.jaja.fleetcommandar.util.SystemUiHider;
+import com.project.jaja.fleetcommander.util.SystemUiHider;
 
 import android.annotation.TargetApi;
 import android.app.Activity;

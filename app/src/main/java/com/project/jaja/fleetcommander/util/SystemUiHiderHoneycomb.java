@@ -1,4 +1,4 @@
-package com.project.jaja.fleetcommandar.util;
+package com.project.jaja.fleetcommander.util;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
