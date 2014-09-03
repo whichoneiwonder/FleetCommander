@@ -1,3 +1,4 @@
+package com.project.jaja.fleetcommander.code;
 
 public class Move {
     private int x;
