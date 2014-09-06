@@ -9,10 +9,11 @@ public class DefaultShip implements Ship {
     private int health;
     private int[] directionList;
 
-    public DefaultShip(Location loc, int dir, int maxSteps, int health, int[] directionList) {
+    public DefaultShip(Location loc, int dir, int health, int[] directionList) {
         this.loc = loc;
         this.dir = dir;
         this.health = health;
+        this.directionList = directionList;
     }
 
     public Location getLoc() {
@@ -46,4 +47,6 @@ public class DefaultShip implements Ship {
     public void setHealth(int health) {
         this.health = health;
     }
+
+
 }

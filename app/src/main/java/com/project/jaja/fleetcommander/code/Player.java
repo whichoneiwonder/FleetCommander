@@ -18,6 +18,45 @@ public class Player {
     private int maxSteps;
     private ArrayList<DefaultShip> fleet;
 
+    public Player(int id, int turn, int maxSteps, ArrayList<DefaultShip> fleet) {
+        this.id = id;
+        this.turn = turn;
+        this.maxSteps = maxSteps;
+        this.fleet = fleet;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getTurn() {
+        return turn;
+    }
+
+    public void setTurn(int turn) {
+        this.turn = turn;
+    }
+
+    public int getMaxSteps() {
+        return maxSteps;
+    }
+
+    public void setMaxSteps(int maxSteps) {
+        this.maxSteps = maxSteps;
+    }
+
+    public ArrayList<DefaultShip> getFleet() {
+        return fleet;
+    }
+
+    public void setFleet(ArrayList<DefaultShip> fleet) {
+        this.fleet = fleet;
+    }
+
     public void updatePlayer(String jsonData) throws JSONException {
         JSONObject data = new JSONObject(jsonData);
         int[] directionList = new int[maxSteps];
@@ -68,5 +107,37 @@ public class Player {
 
             ship.setDirectionList(directionList);
         }
+    }
+
+    public String toJSONString() throws JSONException {
+        JSONObject data = new JSONObject();
+        data.put("id", id);
+        data.put("turn", turn);
+        data.put("maxSteps", maxSteps);
+
+        JSONArray ships = new JSONArray();
+        for (DefaultShip ship: fleet) {
+            JSONObject shipJSON = new JSONObject();
+            shipJSON.put("health", ship.getHealth());
+
+            Location loc = ship.getLoc();
+            JSONObject locJSON = new JSONObject();
+            locJSON.put("x", loc.getX());
+            locJSON.put("y", loc.getY());
+            shipJSON.put("loc", locJSON);
+
+            shipJSON.put("dir", ship.getDir());
+            int[] dirList = ship.getDirectionList();
+            JSONArray dirJSON = new JSONArray();
+            for (int i = 0; i < dirList.length; i++) {
+                dirJSON.put(dirList[i]);
+            }
+            shipJSON.put("dir_list", dirJSON);
+            ships.put(shipJSON);
+        }
+
+        data.put("ships", ships);
+
+        return data.toString();
     }
 }
