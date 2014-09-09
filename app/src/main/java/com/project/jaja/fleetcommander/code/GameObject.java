@@ -21,8 +21,23 @@ public class GameObject{
 
     //TODO implement these methods
 
-    public boolean detectCollision(){
-        return true;
+    public boolean detectCollision(GameObject testObject){
+        int playerX = this.loc.getX();
+        int playerY = this.loc.getY();
+
+        int enemyX = testObject.getLoc().getX();
+        int enemyY  = testObject.getLoc().getY();
+
+        //Going back to high school maths to calculate the distance between two points
+        double distance = Math.sqrt(Math.pow(playerX - enemyX, 2) + Math.pow(playerY - enemyY, 2));
+
+
+        if(distance > 100){ //This is an arbitrary value that will most likely be changed
+            //Based on the sprite widths
+            return false;
+        } else {
+            return true;
+        }
     }
 
     public boolean render(){
