@@ -3,16 +3,34 @@ package com.project.jaja.fleetcommander.code;
 /**
  * Created by anty on 5/09/14.
  */
-public class DefaultShip implements Ship {
+public class GameObject{
     private Location loc;
     private int dir;
     private int health;
     private int[] directionList;
 
-    public DefaultShip(Location loc, int dir, int maxSteps, int health, int[] directionList) {
+    public GameObject(Location loc, int dir, int maxSteps, int health, int[] directionList) {
         this.loc = loc;
         this.dir = dir;
         this.health = health;
+    }
+
+    public GameObject(){
+
+    }
+
+    //TODO implement these methods
+
+    public boolean detectCollision(){
+        return true;
+    }
+
+    public boolean render(){
+        return true;
+    }
+
+    public boolean destroy(){
+        return true;
     }
 
     public Location getLoc() {
