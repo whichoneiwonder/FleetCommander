@@ -1,5 +1,7 @@
 package com.project.jaja.fleetcommander.code;
 
+import java.util.ArrayList;
+
 /**
  * Created by anty on 5/09/14.
  */
@@ -7,12 +9,13 @@ public class DefaultShip implements Ship {
     private Location loc;
     private int dir;
     private int health;
-    private int[] directionList;
+    private ArrayList<Integer> directionList;
 
-    public DefaultShip(Location loc, int dir, int maxSteps, int health, int[] directionList) {
+    public DefaultShip(Location loc, int dir, int health, ArrayList<Integer> directionList) {
         this.loc = loc;
         this.dir = dir;
         this.health = health;
+        this.directionList = directionList;
     }
 
     public Location getLoc() {
@@ -27,11 +30,11 @@ public class DefaultShip implements Ship {
         return health;
     }
 
-    public int[] getDirectionList() {
+    public ArrayList<Integer> getDirectionList() {
         return directionList;
     }
 
-    public void setDirectionList(int[] directionList) {
+    public void setDirectionList(ArrayList<Integer> directionList) {
         this.directionList = directionList;
     }
 
