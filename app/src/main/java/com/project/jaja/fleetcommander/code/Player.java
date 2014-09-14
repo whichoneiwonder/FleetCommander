@@ -59,7 +59,6 @@ public class Player {
 
     public void updatePlayer(String jsonData) throws JSONException {
         JSONObject data = new JSONObject(jsonData);
-        int[] directionList = new int[maxSteps];
 
         if (data.getInt("maxSteps") != maxSteps) {
             System.out.println("maxSteps changed, system exiting...");
@@ -98,11 +97,13 @@ public class Player {
             ship.setHealth(shipJSON.getInt("health"));
 
             JSONArray directionsJSON = shipJSON.getJSONArray("dir_list");
+            ArrayList<Integer> directionList = new ArrayList<Integer>();
 
-            // Make sure no extra moves are added in
-            int maxMoves = Math.min(maxSteps, directionsJSON.length());
-            for (int j = 0; j < maxMoves; j++) {
-                directionList[j] = directionsJSON.getInt(j);
+            if (directionsJSON != null) {
+                int len = directionsJSON.length();
+                for (int j = 0;i<len;i++){
+                    directionList.add(directionsJSON.getInt(j));
+                }
             }
 
             ship.setDirectionList(directionList);
@@ -127,10 +128,10 @@ public class Player {
             shipJSON.put("loc", locJSON);
 
             shipJSON.put("dir", ship.getDir());
-            int[] dirList = ship.getDirectionList();
+            ArrayList<Integer> dirList = ship.getDirectionList();
             JSONArray dirJSON = new JSONArray();
-            for (int i = 0; i < dirList.length; i++) {
-                dirJSON.put(dirList[i]);
+            for (int one_dir: dirList) {
+                dirJSON.put(one_dir);
             }
             shipJSON.put("dir_list", dirJSON);
             ships.put(shipJSON);

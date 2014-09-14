@@ -2,8 +2,10 @@
 <resources>
 
     <string name="app_name">Fleet Commander</string>
-    <string name="title_activity_p2p">P2P Communication</string>
-    <string name="title_activity_main">Home Screen</string>
-    <string name="dummy_button">P2P Communication</string>
-    <string name="dummy_content">dummy</string>
+    <string name="server_button">Host game</string>
+    <string name="client_button">Connect as client</string>
+    <string name="title_activity_p2p">Connect to peer</string>
+    <string name="title_activity_main">Fleet Commander</string>
+    <string name="p2p_button">Connect to peer</string>
+    <string name="ip_filler">Enter server IP</string>
 </resources>

@@ -3,6 +3,7 @@ package com.project.jaja.fleetcommander.code;
 import junit.framework.TestCase;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class PlayerTest extends TestCase {
 
@@ -15,17 +16,17 @@ public class PlayerTest extends TestCase {
         ArrayList<DefaultShip> ships = new ArrayList<DefaultShip>();
 
         Location loc1 = new Location(1, 1);
-        int[] dirs1 = new int[]{2,3,4,5,6,7,0,1,2};
+        ArrayList<Integer> dirs1 = new ArrayList<Integer>(Arrays.asList(2, 3, 4, 5, 6, 7, 0, 1, 2)){};
         DefaultShip ship1 = new DefaultShip(loc1, 0, 100, dirs1);
         ships.add(ship1);
 
         Location loc2 = new Location(1, 3);
-        int[] dirs2 = new int[]{1,3,4,5,6,7,0,1,2};
+        ArrayList<Integer> dirs2 = new ArrayList<Integer>(Arrays.asList(1,3,4,5,6,7,0,1,2)){};
         DefaultShip ship2 = new DefaultShip(loc2, 1, 90, dirs2);
         ships.add(ship2);
 
         Location loc3 = new Location(1, 5);
-        int[] dirs3 = new int[]{1,3,4,5,6,7,0,4,5};
+        ArrayList<Integer> dirs3 = new ArrayList<Integer>(Arrays.asList(1,3,4,5,6,7,0,4,5)){};
         DefaultShip ship3 = new DefaultShip(loc3, 2, 80, dirs3);
         ships.add(ship3);
 
