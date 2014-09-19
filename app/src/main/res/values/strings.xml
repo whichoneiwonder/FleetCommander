@@ -8,4 +8,9 @@
     <string name="title_activity_main">Fleet Commander</string>
     <string name="p2p_button">Connect to peer</string>
     <string name="ip_filler">Enter server IP</string>
+    <string name="new_game">New Game</string>
+    <string name="title_activity_new_game">NewGameActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
 </resources>
