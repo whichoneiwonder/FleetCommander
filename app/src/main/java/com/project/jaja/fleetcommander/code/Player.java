@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 /**
  * Created by anty on 5/09/14.
+ * This class looks after the Player class and details
  */
 public class Player {
     private int id;
@@ -18,12 +19,20 @@ public class Player {
     private int maxSteps;
     private ArrayList<DefaultShip> fleet;
 
+    /**
+     * Constructs a Player with an id, turn, maxSteps and an array of ships
+     * @param id Android id
+     * @param turn Turn number
+     * @param maxSteps maximum steps available to each Player
+     * @param fleet Array of DefaultShips
+     */
     public Player(int id, int turn, int maxSteps, ArrayList<DefaultShip> fleet) {
         this.id = id;
         this.turn = turn;
         this.maxSteps = maxSteps;
         this.fleet = fleet;
     }
+
 
     public void updatePlayer(String jsonData) throws JSONException {
         JSONObject data = new JSONObject(jsonData);
