@@ -5,7 +5,13 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-
+/*
+*   Created by Avnish Jain
+*
+*   Added NewGame button on MainActivity for debugging purposes.
+*   Use this for testing game components when not using the P2P features.
+*
+* */
 public class NewGameActivity extends Activity {
 
     @Override
