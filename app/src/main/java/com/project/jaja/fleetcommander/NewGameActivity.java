@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
 
 /*
 *   Created by Avnish Jain
@@ -17,7 +18,9 @@ public class NewGameActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_game);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //setContentView(R.layout.activity_new_game);
+        setContentView(new GameView(this));
     }
 
 
