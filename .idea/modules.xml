@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/FleetCommander.iml" filepath="$PROJECT_DIR$/FleetCommander.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/fleet-commander.iml" filepath="$PROJECT_DIR$/fleet-commander.iml" />
     </modules>
   </component>
 </project>

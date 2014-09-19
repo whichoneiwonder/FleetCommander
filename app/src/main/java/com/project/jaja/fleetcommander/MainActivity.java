@@ -46,7 +46,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
     }
 
@@ -62,6 +61,11 @@ public class MainActivity extends Activity {
 
     public void goToP2P(View view) {
         Intent intent = new Intent(getApplicationContext(), P2PActivity.class);
+        startActivity(intent);
+    }
+
+    public void goToNewGame(View view) {
+        Intent intent = new Intent(getApplicationContext(), NewGameActivity.class);
         startActivity(intent);
     }
 }
