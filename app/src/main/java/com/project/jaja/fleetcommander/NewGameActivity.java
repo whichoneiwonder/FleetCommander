@@ -7,7 +7,7 @@ import android.view.MenuItem;
 import android.view.Window;
 
 /*
-*   Created by Avnish Jain
+*   Created by avnishjain and jmcma
 *
 *   Added NewGame button on MainActivity for debugging purposes.
 *   Use this for testing game components when not using the P2P features.
@@ -18,8 +18,10 @@ public class NewGameActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //Requests the view not to show the top banner
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        //setContentView(R.layout.activity_new_game);
+
+        //Sets the content of the custom view to be that of the Activity
         setContentView(new GameView(this));
     }
 
