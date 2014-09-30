@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -34,6 +36,8 @@ public class GameView extends SurfaceView {
 
     //Integer value holding the number of ships created
     private int numShips;
+
+    private long lastClick;
 
 
     /**
@@ -136,26 +140,32 @@ public class GameView extends SurfaceView {
         //Sets the background to the RGB Value
         canvas.drawColor(Color.rgb(0,153,204));
 
+        Paint paint = new Paint();
+        paint.setColor(Color.WHITE);
+        paint.setStrokeWidth(3);
+        paint.setStyle(Paint.Style.STROKE);
+
+
+
         //Abstract to a function and potentially in the wrong place (should be in ShipSprite)
         //If the ship bounces of an edge it changes direction
         for(ShipSprite ship : ships){
-            if (ship.getXPosition() > this.getWidth() - map.getWidth() - ship.getXSpeed() || ship.getXPosition() + ship.getXSpeed() < 0) {
-                ship.setXSpeed(-1*ship.getXSpeed());
-            }
-
-            if (ship.getYPosition() > this.getHeight() - map.getHeight() - ship.getYSpeed() || ship.getYPosition() + ship.getYSpeed() < 0) {
-                ship.setYSpeed(-1*ship.getYSpeed());
-            }
-
             //gets the image needed to be displayed based on the direction
             int resourceID = ship.getDirectionID(ship.getDirection());
-
             //sets the image of the ship to the specified image
             ship.setMap(BitmapFactory.decodeResource(getResources(), resourceID));
 
             //draws the ship onto the canvas
             ship.onDraw(canvas);
+            if(ship.getPath().isEmpty() == false) {
+                canvas.drawPath(ship.getPath(), paint);
+            }
         }
+
+
+
+
+
 
     }
 
@@ -169,20 +179,60 @@ public class GameView extends SurfaceView {
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        synchronized (getHolder()) {
 
-            //runs through all the ships in the array and checks to see
-            //if the touch points are in the image of the ship
-            for(ShipSprite ship: ships){
-                if (ship.isColliding(event.getX(), event.getY())) {
-                    //Do something with the ships here
-                    ships.remove(ship);
+        if (System.currentTimeMillis() - lastClick > 300) {
+        lastClick = System.currentTimeMillis();
+            synchronized (getHolder()) {
+                //runs through all the ships in the array and checks to see
+                //if the touch points are in the image of the ship
+                for (ShipSprite ship : ships) {
+                    if (ship.isColliding(event.getX(), event.getY())) {
+                        //Do something with the ships here
+                        ship.changeShipSelect(ship.isShipSelect());
+                        int resourceID = ship.getDirectionID(ship.getDirection());
+                        ship.setMap(BitmapFactory.decodeResource(getResources(), resourceID));
+                        break;
+                    }
+                }
+            }
+
+        }
+        //return true;
+        for(ShipSprite ship:ships) {
+                if(event.getAction() == event.ACTION_DOWN) {
+                    // init the list every time a new touchDown is registered
+                    if(ship.isShipSelect() == true) {
+                        ship.setShipSelect(true);
+                        ship.getxCoords().clear();
+                        ship.getyCoords().clear();
+                    }
+                    break;
+                }
+                if(event.getAction() == event.ACTION_MOVE) {
+                    // while moving, store all touch points in the lists
+                    if(ship.isShipSelect() == true) {
+                        ship.getxCoords().add((int) event.getX());
+                        ship.getyCoords().add((int) event.getY());
+                    }
+                    break;
+                }
+                if(event.getAction() == event.ACTION_UP) {
+                    // when the event is finished, create the path and make the sprite move
+                    // instead of the history size use the size of your own lists
+                    ship.setPath( new Path() );
+                    if (ship.getxCoords().size() > 0){
+                        ship.getPath().moveTo(ship.getxCoords().get(0), ship.getyCoords().get(0));
+                        for (int i = 1; i < ship.getxCoords().size(); i++) {
+                            ship.getPath().lineTo(ship.getxCoords().get(i), ship.getyCoords().get(i));
+                        }
+                    }
                     break;
                 }
             }
-        }
+
         return true;
     }
+
 
 
 }
