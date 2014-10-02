@@ -8,4 +8,15 @@
     <string name="title_activity_main">Fleet Commander</string>
     <string name="p2p_button">Connect to peer</string>
     <string name="ip_filler">Enter server IP</string>
+    <string name="message_hint">Enter message here</string>
+    <string name="sendButtonText">Send</string>
+    <string name="title_activity_play">Let\'s Play</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="pause_play">Pause</string>
+    <string name="play_play">Play</string>
+    <string name="timer">Timer</string>
+    <string name="my_ip">My IP</string>
+    <string name="waiting">Waiting</string>
+
 </resources>

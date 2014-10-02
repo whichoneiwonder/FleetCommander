@@ -1,34 +1,25 @@
 package com.project.jaja.fleetcommander;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import com.project.jaja.fleetcommander.util.SystemUiHider;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.SocketException;
 import java.util.Enumeration;
 
 /**
- * This class tests the socket connection which will eventually be used to transfer JSON data
- * between the two phones. This is a temporary Activity and by no means indicative of the
- * final product.
+ *
  */
 public class P2PActivity extends Activity {
     /**
@@ -60,33 +51,16 @@ public class P2PActivity extends Activity {
     private SystemUiHider mSystemUiHider;
 
     // Client IP
-    public String CLIENTIP;
+    public String CLIENTIP = "";
 
     // SERVER IP
-    public String SERVERIP = "10.0.2.15";
-
-    // DESIGNATE A PORT
-    public static final int SERVERPORT = 5554;
-
-    private Handler handler = new Handler();
-    private ServerSocket serverSocket = null;
-
-    // Explains whether the socket is connected or not
-    private boolean connected = false;
-
-    // Explains whether this Activity is acting as a ServerThread or a ClientThread
-    private boolean hosting = false;
-
-    public PrintWriter out = null;
-
-    // Associated with the top TextView in the UI
-    private TextView serverStatus;
-
-    // Associated with the Send button in the UI
-    public Button sendMessage;
+    public String SERVERIP = "";
 
     // Associated with the IP EditText field in the UI
     private EditText serverIpField;
+
+    // Handler for UI and socket connections
+    private Handler handler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,8 +68,8 @@ public class P2PActivity extends Activity {
 
         setContentView(R.layout.activity_p2p);
         serverIpField = (EditText) findViewById(R.id.server_ip);
-        serverStatus = (TextView) findViewById(R.id.server_status);
-        sendMessage = (Button) findViewById(R.id.send_button);
+        TextView myIP = (TextView) findViewById(R.id.myIP);
+        myIP.setText("My IP is: " + getLocalIpAddress());
 
         final View controlsView = findViewById(R.id.fullscreen_content_controls);
         final View contentView = findViewById(R.id.fullscreen_content);
@@ -203,13 +177,10 @@ public class P2PActivity extends Activity {
      */
     public void clickServer(View view) {
         SERVERIP = getLocalIpAddress();
-        Thread fst = new Thread(new ServerThread());
-        fst.start();
-        hosting = true;
-
-        // Prevent the user from kicking off the thread again
-        Button serverButton = (Button) findViewById(R.id.server_button);
-        serverButton.setEnabled(false);
+        Intent intent = new Intent(P2PActivity.this, PlayActivity.class);
+        intent.putExtra("SERVERIP", SERVERIP);
+        intent.putExtra("CLIENTIP", CLIENTIP);
+        startActivity(intent);
     }
 
     /**
@@ -217,93 +188,14 @@ public class P2PActivity extends Activity {
      * @param view This view
      */
     public void clickClient(View view) {
-        if (!connected) {
-            SERVERIP = serverIpField.getText().toString();
-            CLIENTIP = getLocalIpAddress();
-            if (!SERVERIP.equals("")) {
-                Thread cThread = new Thread(new ClientThread());
-                cThread.start();
-            }
-        }
-    }
+        SERVERIP = serverIpField.getText().toString();
+        CLIENTIP = getLocalIpAddress();
 
-    /**
-     * This ServerThread lets this device act as server
-     */
-    public class ServerThread implements Runnable {
-        public void run() {
-            try {
-                if (SERVERIP != null) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            serverStatus.setText("Listening on IP: " + SERVERIP);
-                        }
-                    });
-                    serverSocket = new ServerSocket(SERVERPORT);
-                    while (true) {
-                        // LISTEN FOR INCOMING CLIENTS
-                        Socket client = serverSocket.accept();
-                        CLIENTIP = client.getInetAddress().getHostAddress();
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                serverStatus.setText("Connected.");
-                            }
-                        });
-
-                        try {
-                            BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-                            String line = null;
-                            out = new PrintWriter(client.getOutputStream(), true);
-
-                            // Broken at the moment
-                            sendMessage.setOnClickListener(new View.OnClickListener() {
-                                public void onClick(View v) {
-                                    EditText message = (EditText) findViewById(R.id.message_field);
-                                    out.println(message.getText().toString());
-                                    message.setText("");
-                                }
-                            });
-
-                            connected = true;
-                            while (connected) {
-                                line = in.readLine();
-
-                                if (line.equals("GAME END")) {
-                                    serverSocket.close();
-                                } else {
-                                    serverStatus.setText(line);
-                                }
-                            }
-                            break;
-                        } catch (Exception e) {
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    serverStatus.setText("Oops. Connection interrupted. Please reconnect your phones.");
-                                }
-                            });
-                            e.printStackTrace();
-                        }
-                    }
-                } else {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            serverStatus.setText("Couldn't detect internet connection.");
-                        }
-                    });
-                }
-            } catch (Exception e) {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        serverStatus.setText("Error");
-                    }
-                });
-                e.printStackTrace();
-            }
+        if (!SERVERIP.equals("")) {
+            Intent intent = new Intent(P2PActivity.this, PlayActivity.class);
+            intent.putExtra("SERVERIP", SERVERIP);
+            intent.putExtra("CLIENTIP", CLIENTIP);
+            startActivity(intent);
         }
     }
 
@@ -327,61 +219,5 @@ public class P2PActivity extends Activity {
             ex.printStackTrace();
         }
         return null;
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        try {
-            // MAKE SURE YOU CLOSE THE SOCKET UPON EXITING
-            if (serverSocket != null) {
-                serverSocket.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public class ClientThread implements Runnable {
-
-        public void run() {
-            try {
-                InetAddress serverAddr = InetAddress.getByName(SERVERIP);
-                try {
-                    Socket socket = new Socket(serverAddr, SERVERPORT);
-                    connected = true;
-                    while (connected) {
-                        // Set up socket streams in and out
-                        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                        String input = in.readLine();
-                        out = new PrintWriter(socket.getOutputStream(), true);
-
-                        // Broken at the moment
-                        sendMessage.setOnClickListener(new View.OnClickListener() {
-                            public void onClick(View v) {
-                                EditText message = (EditText) findViewById(R.id.message_field);
-                                out.println(message.getText().toString());
-                                message.setText("");
-                            }
-                        });
-
-                        // Deal with various commands, will be expanded
-                        if (input.equals("GAME END")) {
-                            connected = false;
-                        } else {
-                            serverStatus.setText(input);
-                        }
-                    }
-                    socket.close();
-                    serverStatus.setText("socket closed");
-                    Log.d("ClientActivity", "C: Closed.");
-                } catch (Exception e) {
-                        serverStatus.setText("except");
-                        Log.e("ClientActivity", "S: Error", e);
-                }
-            } catch (Exception e) {
-                Log.e("ClientActivity", "C: Error", e);
-            }
-        }
     }
 }
