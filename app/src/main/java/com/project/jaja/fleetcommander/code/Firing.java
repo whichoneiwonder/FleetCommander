@@ -12,7 +12,7 @@ public interface Firing {
     public void damage();
 
     //We also need to be able to calculate whether or not a unit is in shooting range
-    public void calculateShootingRange();
+    public boolean calculateShootingRange(GameObject target);
 
 
 }
