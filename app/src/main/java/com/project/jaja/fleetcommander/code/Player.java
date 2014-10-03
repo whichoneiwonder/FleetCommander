@@ -33,6 +33,38 @@ public class Player {
         this.fleet = fleet;
     }
 
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public int getTurn() {
+        return turn;
+    }
+
+    public void setTurn(int turn) {
+        this.turn = turn;
+    }
+
+    public int getMaxSteps() {
+        return maxSteps;
+    }
+
+    public void setMaxSteps(int maxSteps) {
+        this.maxSteps = maxSteps;
+    }
+
+    public ArrayList<DefaultShip> getFleet() {
+        return fleet;
+    }
+
+    public void setFleet(ArrayList<DefaultShip> fleet) {
+        this.fleet = fleet;
+    }
+
     public void updatePlayer(String jsonData) throws JSONException {
         JSONObject data = new JSONObject(jsonData);
 
@@ -116,37 +148,5 @@ public class Player {
         data.put("ships", ships);
 
         return data.toString();
-    }
-
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
-    public int getTurn() {
-        return turn;
-    }
-
-    public void setTurn(int turn) {
-        this.turn = turn;
-    }
-
-    public int getMaxSteps() {
-        return maxSteps;
-    }
-
-    public void setMaxSteps(int maxSteps) {
-        this.maxSteps = maxSteps;
-    }
-
-    public ArrayList<DefaultShip> getFleet() {
-        return fleet;
-    }
-
-    public void setFleet(ArrayList<DefaultShip> fleet) {
-        this.fleet = fleet;
     }
 }
