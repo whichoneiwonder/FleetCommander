@@ -8,9 +8,10 @@ import java.util.ArrayList;
 
 /**
  * Created by anty on 5/09/14.
+ * This class looks after the Player class and details
  */
 public class Player {
-    private int id;
+    private String ip;
 
     // Will implement if we have time
     // private Statistic stats;
@@ -18,19 +19,26 @@ public class Player {
     private int maxSteps;
     private ArrayList<DefaultShip> fleet;
 
-    public Player(int id, int turn, int maxSteps, ArrayList<DefaultShip> fleet) {
-        this.id = id;
+    /**
+     * Constructs a Player with an IP address, turn, maxSteps and an array of ships
+     * @param ip IP Address
+     * @param turn Turn number
+     * @param maxSteps maximum steps available to each Player
+     * @param fleet Array of DefaultShips
+     */
+    public Player(String ip, int turn, int maxSteps, ArrayList<DefaultShip> fleet) {
+        this.ip = ip;
         this.turn = turn;
         this.maxSteps = maxSteps;
         this.fleet = fleet;
     }
 
-    public int getId() {
-        return id;
+    public String getIp() {
+        return ip;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setIp(String ip) {
+        this.ip = ip;
     }
 
     public int getTurn() {
@@ -65,9 +73,9 @@ public class Player {
             System.exit(1);
         }
 
-        // Checks if correct player id has been given
-        if (data.getInt("id") != id) {
-            System.out.println("player id changed, system exiting...");
+        // Checks if correct player IP address has been given
+        if (data.getString("ip") != ip) {
+            System.out.println("player IP address changed, system exiting...");
             System.exit(1);
         }
 
@@ -112,7 +120,7 @@ public class Player {
 
     public String toJSONString() throws JSONException {
         JSONObject data = new JSONObject();
-        data.put("id", id);
+        data.put("ip", ip);
         data.put("turn", turn);
         data.put("maxSteps", maxSteps);
 

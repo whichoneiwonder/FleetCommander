@@ -12,5 +12,14 @@
     <string name="title_activity_new_game">NewGameActivity</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-
+    <string name="message_hint">Enter message here</string>
+    <string name="sendButtonText">Send</string>
+    <string name="title_activity_play">Let\'s Play</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="pause_play">Pause</string>
+    <string name="play_play">Play</string>
+    <string name="timer">Timer</string>
+    <string name="my_ip">My IP</string>
+    <string name="waiting">Waiting</string>
 </resources>

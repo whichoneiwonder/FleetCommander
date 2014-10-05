@@ -1,10 +1,10 @@
 package com.project.jaja.fleetcommander;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
@@ -12,25 +12,14 @@ import android.widget.TextView;
 
 import com.project.jaja.fleetcommander.util.SystemUiHider;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.SocketException;
 import java.util.Enumeration;
 
-
 /**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
  *
- * @see SystemUiHider
  */
 public class P2PActivity extends Activity {
     /**
@@ -61,28 +50,26 @@ public class P2PActivity extends Activity {
      */
     private SystemUiHider mSystemUiHider;
 
-    private TextView serverStatus;
+    // Client IP
+    public String CLIENTIP = "";
 
-    // DEFAULT IP
-    public static String SERVERIP = "10.0.2.15";
-    // DESIGNATE A PORT
-    public static final int SERVERPORT = 8080;
+    // SERVER IP
+    public String SERVERIP = "";
+
+    // Associated with the IP EditText field in the UI
+    private EditText serverIpField;
+
+    // Handler for UI and socket connections
     private Handler handler = new Handler();
-    private ServerSocket serverSocket = null;
-
-    private EditText serverIp;
-
-    private String serverIpAddress = "";
-
-    private boolean connected = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_p2p);
-        serverIp = (EditText) findViewById(R.id.server_ip);
-        serverStatus = (TextView) findViewById(R.id.server_status);
+        serverIpField = (EditText) findViewById(R.id.server_ip);
+        TextView myIP = (TextView) findViewById(R.id.myIP);
+        myIP.setText("My IP is: " + getLocalIpAddress());
 
         final View controlsView = findViewById(R.id.fullscreen_content_controls);
         final View contentView = findViewById(R.id.fullscreen_content);
@@ -184,147 +171,53 @@ public class P2PActivity extends Activity {
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
 
+    /**
+     * This function activates the ServerThread and displays this device's IP address
+     * @param view This view
+     */
     public void clickServer(View view) {
         SERVERIP = getLocalIpAddress();
-        Thread fst = new Thread(new ServerThread());
-        fst.start();
+        Intent intent = new Intent(P2PActivity.this, PlayActivity.class);
+        intent.putExtra("SERVERIP", SERVERIP);
+        intent.putExtra("CLIENTIP", CLIENTIP);
+        startActivity(intent);
     }
 
+    /**
+     * This function activates the ClientThread given the correct IP address has been entered
+     * @param view This view
+     */
     public void clickClient(View view) {
-        if (!connected) {
-            serverIpAddress = serverIp.getText().toString();
-            if (!serverIpAddress.equals("")) {
-                Thread cThread = new Thread(new ClientThread());
-                cThread.start();
-            }
+        SERVERIP = serverIpField.getText().toString();
+        CLIENTIP = getLocalIpAddress();
+
+        if (!SERVERIP.equals("")) {
+            Intent intent = new Intent(P2PActivity.this, PlayActivity.class);
+            intent.putExtra("SERVERIP", SERVERIP);
+            intent.putExtra("CLIENTIP", CLIENTIP);
+            startActivity(intent);
         }
     }
 
-    public class ServerThread implements Runnable {
-
-        public void run() {
-            try {
-                if (SERVERIP != null) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            serverStatus.setText("Listening on IP: " + SERVERIP);
-                        }
-                    });
-                    serverSocket = new ServerSocket(SERVERPORT);
-                    while (true) {
-                        // LISTEN FOR INCOMING CLIENTS
-                        Socket client = serverSocket.accept();
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                serverStatus.setText("Connected.");
-                            }
-                        });
-
-                        try {
-                            BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-                            String line = null;
-                            while ((line = in.readLine()) != null) {
-                                Log.d("P2PActivity", line);
-                                handler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        // DO WHATEVER YOU WANT TO THE FRONT END
-                                        // THIS IS WHERE YOU CAN BE CREATIVE
-                                    }
-                                });
-                            }
-                            break;
-                        } catch (Exception e) {
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    serverStatus.setText("Oops. Connection interrupted. Please reconnect your phones.");
-                                }
-                            });
-                            e.printStackTrace();
-                        }
-                    }
-                } else {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            serverStatus.setText("Couldn't detect internet connection.");
-                        }
-                    });
-                }
-            } catch (Exception e) {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        serverStatus.setText("Error");
-                    }
-                });
-                e.printStackTrace();
-            }
-        }
-    }
-
-    // GETS THE IP ADDRESS OF YOUR PHONE'S NETWORK
-    private String getLocalIpAddress() {
+    /**
+     * This function gets the local IP address in a readable String form
+     * Source: http://stackoverflow.com/questions/6064510/how-to-get-ip-address-of-the-device
+     * @return String value IP address
+     */
+    public static String getLocalIpAddress() {
         try {
-            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
                 NetworkInterface intf = en.nextElement();
-                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
+                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
                     InetAddress inetAddress = enumIpAddr.nextElement();
-                    if (!inetAddress.isLoopbackAddress()) {
-                        return inetAddress.getHostAddress().toString();
+                    if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {
+                        return inetAddress.getHostAddress();
                     }
                 }
             }
         } catch (SocketException ex) {
-            Log.e("P2PActivity", ex.toString());
+            ex.printStackTrace();
         }
         return null;
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        try {
-            // MAKE SURE YOU CLOSE THE SOCKET UPON EXITING
-            if (serverSocket != null) {
-                serverSocket.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public class ClientThread implements Runnable {
-
-        public void run() {
-            try {
-                InetAddress serverAddr = InetAddress.getByName(serverIpAddress);
-                Log.d("ClientActivity", "C: Connecting...");
-                Socket socket = new Socket(serverAddr, P2PActivity.SERVERPORT);
-                connected = true;
-                while (connected) {
-                    try {
-                        Log.d("ClientActivity", "C: Sending command.");
-                        PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket
-                                .getOutputStream())), true);
-                        // WHERE YOU ISSUE THE COMMANDS
-                        out.println("Hey Server!");
-                        Log.d("ClientActivity", "C: Sent.");
-                    } catch (Exception e) {
-                        serverStatus.setText("except");
-                        Log.e("ClientActivity", "S: Error", e);
-                    }
-                }
-                socket.close();
-                serverStatus.setText("socket closed");
-                Log.d("ClientActivity", "C: Closed.");
-            } catch (Exception e) {
-                Log.e("ClientActivity", "C: Error", e);
-                connected = false;
-            }
-        }
     }
 }
