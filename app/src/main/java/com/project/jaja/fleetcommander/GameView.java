@@ -138,7 +138,7 @@ public class GameView extends SurfaceView {
      */
     protected void onDraw(Canvas canvas){
         //Sets the background to the RGB Value
-        canvas.drawColor(Color.rgb(0,153,204));
+         canvas.drawColor(Color.rgb(0,153,204));
 
         Paint paint = new Paint();
         paint.setColor(Color.WHITE);
@@ -167,7 +167,10 @@ public class GameView extends SurfaceView {
                 if(secondShip == ship){
                     continue;
                 }
-                ship.detectCollision(secondShip);
+
+                if(secondShip.stillAlive()) {
+                    ship.detectCollision(secondShip);
+                }
             }
         }
 
