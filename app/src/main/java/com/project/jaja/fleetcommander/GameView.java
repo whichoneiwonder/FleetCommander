@@ -110,7 +110,7 @@ public class GameView extends SurfaceView {
      *  one place
      */
     protected void populateShips(){
-        ships.add(newShip(R.drawable.player_ship));
+        //ships.add(newShip(R.drawable.player_ship));
         //ships.add(newShip(R.drawable.player_ship));
         //ships.add(newShip(R.drawable.player_ship));
     }

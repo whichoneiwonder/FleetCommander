@@ -10,7 +10,7 @@ import java.util.Random;
 /**
  * Created by avnishjain and jmcma on 19/09/14.
  */
-public class ShipSprite {
+public class ShipSprite extends GameObject implements Movable, Firing {
 
     //the View the sprite will be rendered into
     private GameView gameView;
@@ -117,7 +117,7 @@ public class ShipSprite {
 
         }*/
         if(shipSelect == false){
-            return R.drawable.player_left;
+            return R.drawable.ship_left;
         }
         return R.drawable.select_ship_left;
     }
@@ -141,7 +141,8 @@ public class ShipSprite {
     /**Update method called each frame
      * TODO - move this update method into the ship interface/classes
      */
-    private void update(){
+    @Override
+    public void update(){
         int centreX = xPosition + map.getWidth()/2;
         int centreY = yPosition + map.getHeight()/2;
         checkEdges();
@@ -226,6 +227,47 @@ public class ShipSprite {
      */
     public boolean isColliding (float x, float y) {
         return x > xPosition && x < xPosition + map.getWidth() && y > yPosition && y < yPosition + map.getHeight();
+    }
+
+    //Methods implemented from the Firing interface
+    @Override
+    public void shoot(){
+
+    }
+
+    @Override
+    public void damage(){
+
+    }
+
+    @Override
+    public boolean calculateShootingRange(GameObject target){
+
+        //We first need to calculate the distance between the current ship and the target
+        Location targetLoc = target.getLoc();
+        Location userLoc = this.getLoc();
+
+        double xDistance = targetLoc.getX() - userLoc.getX();
+        double yDistance = targetLoc.getY() - userLoc.getY();
+
+        //We also need to calculate whether or not the ship lies within the firing cones
+        double angleBetween = Math.toDegrees(Math.atan2(yDistance, xDistance));
+
+        if(angleBetween == 0 )
+            if(true){
+                return true;
+            } else{
+                return false;
+            }
+
+        return false;
+
+    }
+
+    //Methods implemented from the Movable interface
+    @Override
+    public void makeMove(){
+
     }
 
     //ACCESSORS AND MUTATORS

@@ -1,4 +1,4 @@
-package com.project.jaja.fleetcommander.code;
+package com.project.jaja.fleetcommander;
 
 import org.json.JSONArray;
 import org.json.JSONException;

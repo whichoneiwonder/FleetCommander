@@ -1,5 +1,9 @@
 package com.project.jaja.fleetcommander.code;
 
+import com.project.jaja.fleetcommander.DefaultShip;
+import com.project.jaja.fleetcommander.Location;
+import com.project.jaja.fleetcommander.Player;
+
 import junit.framework.TestCase;
 
 import java.util.ArrayList;

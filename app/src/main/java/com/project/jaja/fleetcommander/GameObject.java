@@ -1,4 +1,4 @@
-package com.project.jaja.fleetcommander.code;
+package com.project.jaja.fleetcommander;
 
 import java.util.ArrayList;
 
@@ -11,7 +11,7 @@ public class GameObject{
     private int health;
     private ArrayList<Integer> directionList;
 
-    public GameObject(Location loc, int dir, int maxSteps, int health, int[] directionList) {
+    public GameObject(Location loc, int dir, int maxSteps, int health) {
         this.loc = loc;
         this.dir = dir;
         this.health = health;
@@ -19,6 +19,19 @@ public class GameObject{
 
     public GameObject(){
 
+    }
+
+    /**
+     * A helper method that we can use to determine whether or not the object should
+     * be persisted in the game view
+     * @return a boolean of whether or not the object is still alive
+     */
+    public boolean stillAlive(){
+        if(this.health <= 0){
+            return false;
+        } else{
+            return true;
+        }
     }
 
     //TODO implement these methods
@@ -38,6 +51,9 @@ public class GameObject{
             //Based on the sprite widths
             return false;
         } else {
+
+            //Damage dealing logic
+
             return true;
         }
     }

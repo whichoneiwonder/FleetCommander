@@ -1,4 +1,4 @@
-package com.project.jaja.fleetcommander.code;
+package com.project.jaja.fleetcommander;
 
 import java.util.HashMap;
 import java.util.Map;
