@@ -2,7 +2,10 @@ package com.project.jaja.fleetcommander;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Path;
+import android.view.MotionEvent;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -42,13 +45,16 @@ public class ShipSprite {
 
     private Path path;
 
-    //Integer direction values and costants
+    //Integer direction values and constants
     private int direction;
-    public final static int UP = 0;
+    public final static int RIGHT = 0;
+    public final static int DOWNRIGHT = 1;
     public final static int DOWN = 2;
-    public final static int LEFT = 3;
-    public final static int RIGHT = 1;
-
+    public final static int DOWNLEFT = 3;
+    public final static int LEFT = 4;
+    public final static int UPLEFT = 5;
+    public final static int UP = 6;
+    public final static int UPRIGHT = 7;
 
     /**ShipSprite Constructor for specifying all but speed
      *
@@ -76,7 +82,7 @@ public class ShipSprite {
         this.xSpeed = 0;
         this.ySpeed = 0;
 
-        this.direction = 2;
+        this.direction = 0;
         this.shipSelect = false;
 
         this.xCoords = new ArrayList<Integer> ();
@@ -117,23 +123,38 @@ public class ShipSprite {
 
         }*/
         if(shipSelect == false){
-            return R.drawable.player_left;
+            return R.drawable.ship_right;
         }
-        return R.drawable.select_ship_left;
+        return R.drawable.select_ship_right;
     }
 
     public int getDirection(){
-        if(xSpeed > 0 && ySpeed > 0 || xSpeed > 0 && ySpeed < 0){
+        if(xSpeed > 0 && ySpeed == 0){
             return RIGHT;
         }
-        if(xSpeed < 0 && ySpeed > 0 || xSpeed < 0 && ySpeed < 0){
+        if(xSpeed < 0 && ySpeed == 0 ){
             return LEFT;
         }
         if(xSpeed == 0 && ySpeed > 0)
-            return DOWN;
+            return UP;
 
         if(xSpeed == 0 && ySpeed < 0)
-            return UP;
+            return DOWN;
+
+        if( xSpeed < 0 && ySpeed < 0)
+            return DOWNLEFT;
+
+        if(xSpeed > 0 && ySpeed < 0){
+            return DOWNRIGHT;
+        }
+        if(xSpeed > 0 && ySpeed > 0){
+            return UPRIGHT;
+        }
+        if(xSpeed < 0 && ySpeed > 0){
+            return UPLEFT;
+        }
+
+
 
         return direction;
     }
@@ -146,7 +167,17 @@ public class ShipSprite {
         int centreY = yPosition + map.getHeight()/2;
         checkEdges();
         // move the ship by increments of its speed
+        // amd update path to draw
         if(xCoords.size() > 0) {
+            //create new path starting from current position
+            path = new Path();
+            path.moveTo(xPosition + (map.getWidth() / 2),
+                    yPosition + (map.getHeight() / 2));
+            //add a line to each waypoint
+            for ( int i = 0; i< xCoords.size(); i++){
+                path.lineTo(xCoords.get(i), yCoords.get(i));
+            }
+
             calculateNextSpeed(xCoords.get(0), yCoords.get(0), centreX, centreY);
             xPosition = xPosition + xSpeed;
             yPosition = yPosition + ySpeed;
@@ -156,6 +187,8 @@ public class ShipSprite {
                yCoords.remove(0);
             }
         }
+
+
 
     }
 
@@ -211,9 +244,51 @@ public class ShipSprite {
      * @param canvas - the canvas to be drawn on
      */
     public void onDraw(Canvas canvas) {
+        // paint to color ship's path with
+        Paint paint = new Paint();
+        paint.setColor(Color.WHITE);
+        paint.setStrokeWidth(3);
+        paint.setStyle(Paint.Style.STROKE );
+
+
+        //update the ship's position etc
         update();
+
+
+
+
+        //calculate what rotation the ship is from due right
+        float rotationDegrees = (getDirection()*  -45);
+        //save the orientation of the canvas
+        canvas.save();
+        //rotate canvas around the centre of the ship
+        canvas.rotate( rotationDegrees, xPosition + (map.getWidth() / 2),
+                yPosition + (map.getHeight() / 2));
+        //draw the ship in rotated frame at its position
         canvas.drawBitmap(map, xPosition , yPosition, null);
+        //restore the canvas to its original orientation
+        canvas.restore();
+
+        //draw the ship's path
+        canvas.drawPath(path,paint);
+
     }
+
+
+    public void onMoveEvent(MotionEvent event){
+        //ignore if it's not a move action
+        if(event.getAction()!= MotionEvent.ACTION_MOVE){
+            return;
+        }
+
+        //append the new coordinates to the path
+        xCoords.add((int) event.getX());
+        yCoords.add((int) event.getY());
+
+
+    }
+
+
 
     /**
      *
@@ -228,7 +303,8 @@ public class ShipSprite {
         return x > xPosition && x < xPosition + map.getWidth() && y > yPosition && y < yPosition + map.getHeight();
     }
 
-    //ACCESSORS AND MUTATORS
+    //ACCESSOR AND MUTATORs
+
 
     public int getXSpeed() {
         return xSpeed;

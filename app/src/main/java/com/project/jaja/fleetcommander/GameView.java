@@ -126,7 +126,7 @@ public class GameView extends SurfaceView {
         map = BitmapFactory.decodeResource(getResources(), drawable);
 
         //Creates the new ship at the specified location
-        ShipSprite newShip = new ShipSprite(this, map, (numShips * 110)+30, 10);
+        ShipSprite newShip = new ShipSprite(this, map, (numShips * 110)+80, 200);
         numShips++;
         return newShip;
     }
@@ -140,13 +140,6 @@ public class GameView extends SurfaceView {
         //Sets the background to the RGB Value
         canvas.drawColor(Color.rgb(0,153,204));
 
-        Paint paint = new Paint();
-        paint.setColor(Color.WHITE);
-        paint.setStrokeWidth(3);
-        paint.setStyle(Paint.Style.STROKE);
-
-
-
         //Abstract to a function and potentially in the wrong place (should be in ShipSprite)
         //If the ship bounces of an edge it changes direction
         for(ShipSprite ship : ships){
@@ -157,9 +150,7 @@ public class GameView extends SurfaceView {
 
             //draws the ship onto the canvas
             ship.onDraw(canvas);
-            if(ship.getPath().isEmpty() == false) {
-                canvas.drawPath(ship.getPath(), paint);
-            }
+
         }
 
 
@@ -169,6 +160,8 @@ public class GameView extends SurfaceView {
 
     }
 
+    //a register
+    ShipSprite shipReceivingInput = null;
     /**
      * Method used when a ship is tapped on
      * Currently it is just removed from rendering, but this one was for
@@ -183,21 +176,66 @@ public class GameView extends SurfaceView {
         if (System.currentTimeMillis() - lastClick > 300) {
         lastClick = System.currentTimeMillis();
             synchronized (getHolder()) {
-                //runs through all the ships in the array and checks to see
-                //if the touch points are in the image of the ship
-                for (ShipSprite ship : ships) {
-                    if (ship.isColliding(event.getX(), event.getY())) {
-                        //Do something with the ships here
-                        ship.changeShipSelect(ship.isShipSelect());
-                        int resourceID = ship.getDirectionID(ship.getDirection());
-                        ship.setMap(BitmapFactory.decodeResource(getResources(), resourceID));
-                        break;
-                    }
-                }
+
             }
 
         }
-        //return true;
+        //if this is the first part of a touch event
+        if(event.getAction() == event.ACTION_DOWN) {
+
+            //the distance between this event and the ships
+            int minDistance = Integer.MAX_VALUE;//initialised to max, so we can find min
+            int distance;
+
+            //find the closest ship to where you've clicked
+            for(ShipSprite ship:ships) {
+                distance = Math.abs(ship.getXPosition()+ship.getMap().getWidth()/2
+                            - (int) event.getX()) +
+                        Math.abs(ship.getYPosition() + ship.getMap().getHeight()/2
+                                - (int) event.getY());
+                if( distance < minDistance){
+                    minDistance = distance;
+                    shipReceivingInput = ship;
+                }
+            }
+            //select a ship only if you've clicked pretty close to it
+            if(minDistance >80 ){
+                shipReceivingInput = null;
+            }
+            //reset the path
+            if(shipReceivingInput!= null){
+                shipReceivingInput.getxCoords().clear();
+                shipReceivingInput.getyCoords().clear();
+                //indicate selection
+                shipReceivingInput.setShipSelect(true);
+            }
+
+
+
+            return true;
+        }
+
+        //if you're dragging your finger
+        if(event.getAction() == event.ACTION_MOVE && shipReceivingInput!= null){
+            if(shipReceivingInput!= null){
+                shipReceivingInput.onMoveEvent(event);
+            }
+            return true;
+        }
+
+        //when you release your finger reset which ship you're interacting with
+        if(event.getAction() == event.ACTION_UP){
+            //indicate disselection
+            if(shipReceivingInput!= null){
+                shipReceivingInput.setShipSelect(false);
+            }
+
+            shipReceivingInput = null;
+            return true;
+        }
+
+
+/* avi's code
         for(ShipSprite ship:ships) {
                 if(event.getAction() == event.ACTION_DOWN) {
                     // init the list every time a new touchDown is registered
@@ -211,8 +249,7 @@ public class GameView extends SurfaceView {
                 if(event.getAction() == event.ACTION_MOVE) {
                     // while moving, store all touch points in the lists
                     if(ship.isShipSelect() == true) {
-                        ship.getxCoords().add((int) event.getX());
-                        ship.getyCoords().add((int) event.getY());
+
                     }
                     break;
                 }
@@ -229,7 +266,7 @@ public class GameView extends SurfaceView {
                     break;
                 }
             }
-
+*/
         return true;
     }
 
