@@ -1,15 +1,41 @@
 package com.project.jaja.fleetcommander;
 
+import android.graphics.Bitmap;
+import android.util.Log;
+
 import java.util.ArrayList;
 
 /**
- * Created by anty on 5/09/14.
+ * Created by anty and James on 5/09/14.
  */
 public class GameObject{
     private Location loc;
     private int dir;
     private int health;
     private ArrayList<Integer> directionList;
+
+    //the bitmap image of the sprite itself:
+    public Bitmap map;
+
+    //the View the sprite will be rendered into
+    public GameView gameView;
+
+    // Speed X and Y values
+    public int xSpeed;
+    public int ySpeed;
+
+    //position X and Y Values
+    public int xPosition;
+
+    public int getyPosition() {
+        return yPosition;
+    }
+
+    public int getxPosition() {
+        return xPosition;
+    }
+
+    public int yPosition;
 
     public GameObject(Location loc, int dir, int maxSteps, int health) {
         this.loc = loc;
@@ -37,24 +63,20 @@ public class GameObject{
     //TODO implement these methods
 
     public boolean detectCollision(GameObject testObject){
-        int playerX = this.loc.getX();
-        int playerY = this.loc.getY();
-
-        int enemyX = testObject.getLoc().getX();
-        int enemyY  = testObject.getLoc().getY();
-
-        //Going back to high school maths to calculate the distance between two points
-        double distance = Math.sqrt(Math.pow(playerX - enemyX, 2) + Math.pow(playerY - enemyY, 2));
 
 
-        if(distance > 100){ //This is an arbitrary value that will most likely be changed
-            //Based on the sprite widths
-            return false;
-        } else {
+        int enemyX = testObject.getxPosition();
+        int enemyY  = testObject.getyPosition();
 
+
+
+        if(enemyX > xPosition && enemyX < xPosition + map.getWidth()
+                && enemyY > yPosition && enemyY < yPosition + map.getHeight()){
             //Damage dealing logic
-
+            Log.d("Collision detection","This is being reached");
             return true;
+        } else {
+            return false;
         }
     }
 
