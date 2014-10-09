@@ -7,9 +7,13 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Point;
+import android.util.Log;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.WindowManager;
 
 import java.util.ArrayList;
 
@@ -37,6 +41,9 @@ public class GameView extends SurfaceView {
     //Integer value holding the number of ships created
     private int numShips;
 
+    public int screenheight;
+    public int screenwidth;
+
     private long lastClick;
 
 
@@ -50,6 +57,14 @@ public class GameView extends SurfaceView {
         //Creates the tread
         thread = new GameLoopThread(this);
 
+        WindowManager window = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = window.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+
+        screenheight = size.y;
+        screenwidth = size.x;
+        Log.i("Dimensions", "Screenheight: " + screenheight + "\nScreen Width: " + screenwidth);
         ships = new ArrayList<ShipSprite>();
         numShips = 0;
         surfaceHolder = getHolder();
@@ -111,7 +126,7 @@ public class GameView extends SurfaceView {
      */
     protected void populateShips(){
         ships.add(newShip(R.drawable.player_ship));
-        //ships.add(newShip(R.drawable.player_ship));
+        ships.add(newShip(R.drawable.player_ship));
         //ships.add(newShip(R.drawable.player_ship));
     }
 
@@ -216,15 +231,15 @@ public class GameView extends SurfaceView {
         }
 
         //if you're dragging your finger
-        if(event.getAction() == event.ACTION_MOVE && shipReceivingInput!= null){
-            if(shipReceivingInput!= null){
-                shipReceivingInput.onMoveEvent(event);
-            }
+        if(event.getAction() == MotionEvent.ACTION_MOVE && shipReceivingInput!= null){
+
+            shipReceivingInput.onMoveEvent(event);
+
             return true;
         }
 
         //when you release your finger reset which ship you're interacting with
-        if(event.getAction() == event.ACTION_UP){
+        if(event.getAction() == MotionEvent.ACTION_UP){
             //indicate disselection
             if(shipReceivingInput!= null){
                 shipReceivingInput.setShipSelect(false);
@@ -233,40 +248,6 @@ public class GameView extends SurfaceView {
             shipReceivingInput = null;
             return true;
         }
-
-
-/* avi's code
-        for(ShipSprite ship:ships) {
-                if(event.getAction() == event.ACTION_DOWN) {
-                    // init the list every time a new touchDown is registered
-                    if(ship.isShipSelect() == true) {
-                        ship.setShipSelect(true);
-                        ship.getxCoords().clear();
-                        ship.getyCoords().clear();
-                    }
-                    break;
-                }
-                if(event.getAction() == event.ACTION_MOVE) {
-                    // while moving, store all touch points in the lists
-                    if(ship.isShipSelect() == true) {
-
-                    }
-                    break;
-                }
-                if(event.getAction() == event.ACTION_UP) {
-                    // when the event is finished, create the path and make the sprite move
-                    // instead of the history size use the size of your own lists
-                    ship.setPath( new Path() );
-                    if (ship.getxCoords().size() > 0){
-                        ship.getPath().moveTo(ship.getxCoords().get(0), ship.getyCoords().get(0));
-                        for (int i = 1; i < ship.getxCoords().size(); i++) {
-                            ship.getPath().lineTo(ship.getxCoords().get(i), ship.getyCoords().get(i));
-                        }
-                    }
-                    break;
-                }
-            }
-*/
         return true;
     }
 

@@ -35,7 +35,9 @@
         </activity>
         <activity
             android:name=".NewGameActivity"
+            android:screenOrientation="portrait"
             android:label="@string/title_activity_new_game" >
+
         </activity>
         <activity
             android:name=".PlayActivity"

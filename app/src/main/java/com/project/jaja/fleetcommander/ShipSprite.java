@@ -182,10 +182,12 @@ public class ShipSprite {
             xPosition = xPosition + xSpeed;
             yPosition = yPosition + ySpeed;
 
-            if(centreX == xCoords.get(0) && centreY == yCoords.get(0)){
+            if(Math.abs(centreX - xCoords.get(0)) <1 && Math.abs(centreY - yCoords.get(0)) <1){
                xCoords.remove(0);
                yCoords.remove(0);
             }
+
+            direction = getDirection();
         }
 
 
@@ -254,11 +256,12 @@ public class ShipSprite {
         //update the ship's position etc
         update();
 
-
+        //draw the ship's path
+        canvas.drawPath(path,paint);
 
 
         //calculate what rotation the ship is from due right
-        float rotationDegrees = (getDirection()*  -45);
+        float rotationDegrees = (direction*  -45);
         //save the orientation of the canvas
         canvas.save();
         //rotate canvas around the centre of the ship
@@ -269,8 +272,7 @@ public class ShipSprite {
         //restore the canvas to its original orientation
         canvas.restore();
 
-        //draw the ship's path
-        canvas.drawPath(path,paint);
+
 
     }
 
