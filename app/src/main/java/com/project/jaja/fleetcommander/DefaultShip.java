@@ -1,11 +1,11 @@
-package com.project.jaja.fleetcommander.code;
+package com.project.jaja.fleetcommander;
 
 import java.util.ArrayList;
 
 /**
  * Created by anty on 5/09/14.
  */
-public class DefaultShip implements Ship {
+public class DefaultShip extends Ship {
     private Location loc;
     private int dir;
     private int health;

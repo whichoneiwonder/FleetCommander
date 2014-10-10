@@ -13,21 +13,9 @@ import java.util.Random;
 /**
  * Created by avnishjain and jmcma on 19/09/14.
  */
-public class ShipSprite {
+public class Ship extends GameObject implements Movable, Firing {
 
-    //the View the sprite will be rendered into
-    private GameView gameView;
 
-    //the bitmap image of the sprite itself:
-    private Bitmap map;
-
-    // Speed X and Y values
-    private int xSpeed;
-    private int ySpeed;
-
-    //position X and Y Values
-    private int xPosition;
-    private int yPosition;
 
     private ArrayList<Integer> xCoords;
     private ArrayList<Integer> yCoords;
@@ -63,7 +51,7 @@ public class ShipSprite {
      * @param xPosition - position in x
      * @param yPosition - position in y
      */
-    public ShipSprite(GameView gameView, Bitmap map, int xPosition, int yPosition){
+    public Ship(GameView gameView, Bitmap map, int xPosition, int yPosition){
         this.gameView = gameView;
         this.map = map;
         path = new Path();
@@ -88,6 +76,10 @@ public class ShipSprite {
         this.xCoords = new ArrayList<Integer> ();
         this.yCoords = new ArrayList<Integer> ();
 
+
+    }
+    //Default constructor
+    public Ship(){
 
     }
 
@@ -124,6 +116,7 @@ public class ShipSprite {
         }*/
         if(shipSelect == false){
             return R.drawable.ship_right;
+
         }
         return R.drawable.select_ship_right;
     }
@@ -162,7 +155,8 @@ public class ShipSprite {
     /**Update method called each frame
      * TODO - move this update method into the ship interface/classes
      */
-    private void update(){
+    @Override
+    public void update(){
         int centreX = xPosition + map.getWidth()/2;
         int centreY = yPosition + map.getHeight()/2;
         checkEdges();
@@ -305,7 +299,51 @@ public class ShipSprite {
         return x > xPosition && x < xPosition + map.getWidth() && y > yPosition && y < yPosition + map.getHeight();
     }
 
+
     //ACCESSOR AND MUTATORs
+
+    //Methods implemented from the Firing interface
+    @Override
+    public void shoot(){
+
+    }
+
+    @Override
+    public void damage(){
+
+    }
+
+    @Override
+    public boolean calculateShootingRange(GameObject target){
+
+        //We first need to calculate the distance between the current ship and the target
+        Location targetLoc = target.getLoc();
+        Location userLoc = this.getLoc();
+
+        double xDistance = targetLoc.getX() - userLoc.getX();
+        double yDistance = targetLoc.getY() - userLoc.getY();
+
+        //We also need to calculate whether or not the ship lies within the firing cones
+        double angleBetween = Math.toDegrees(Math.atan2(yDistance, xDistance));
+
+        if(angleBetween == 0 )
+            if(true){
+                return true;
+            } else{
+                return false;
+            }
+
+        return false;
+
+    }
+
+    //Methods implemented from the Movable interface
+    @Override
+    public void makeMove(){
+
+    }
+
+    //ACCESSORS AND MUTATORS
 
 
     public int getXSpeed() {

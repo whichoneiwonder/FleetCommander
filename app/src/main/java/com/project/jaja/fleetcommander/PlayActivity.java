@@ -14,9 +14,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.project.jaja.fleetcommander.code.DefaultShip;
-import com.project.jaja.fleetcommander.code.Location;
-import com.project.jaja.fleetcommander.code.Player;
+import com.project.jaja.fleetcommander.DefaultShip;
+import com.project.jaja.fleetcommander.Location;
+import com.project.jaja.fleetcommander.Player;
 import com.project.jaja.fleetcommander.util.SystemUiHider;
 
 import java.io.BufferedReader;
