@@ -177,6 +177,9 @@ public class GameView extends SurfaceView {
                 if(secondShip.stillAlive()) {
                     ship.detectCollision(secondShip);
                 }
+                /*else{
+                    ships.remove(secondShip);
+                }*/
             }
         }
 
