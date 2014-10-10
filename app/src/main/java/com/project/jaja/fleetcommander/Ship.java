@@ -51,7 +51,7 @@ public class Ship extends GameObject implements Movable, Firing {
      * @param xPosition - position in x
      * @param yPosition - position in y
      */
-    public Ship(GameView gameView, Bitmap map, int xPosition, int yPosition){
+    public Ship(GameView gameView, Bitmap map, int xPosition, int yPosition, int health){
         this.gameView = gameView;
         this.map = map;
         path = new Path();
@@ -75,6 +75,8 @@ public class Ship extends GameObject implements Movable, Firing {
 
         this.xCoords = new ArrayList<Integer> ();
         this.yCoords = new ArrayList<Integer> ();
+
+        this.health = health;
 
 
     }

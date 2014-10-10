@@ -69,14 +69,14 @@ public class GameObject{
      */
     public boolean detectCollision(GameObject testObject){
 
-
+        Log.d("Collision detection", "detectionCollision() is being called");
         int enemyX = testObject.getxPosition();
         int enemyY  = testObject.getyPosition();
 
         if(enemyX > xPosition && enemyX < xPosition + map.getWidth()
                 && enemyY > yPosition && enemyY < yPosition + map.getHeight()){
             //Damage dealing logic
-            Log.d("Collision detection","This is being reached");
+            Log.d("Collision detection","Two Ships are colliding");
             //We deal different ammounts of damage based on what type of collision it is
             if(testObject instanceof Ship){
                 int enemyDirection = ((Ship) testObject).getDirection();

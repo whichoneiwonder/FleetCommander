@@ -142,7 +142,7 @@ public class GameView extends SurfaceView {
 
         //Creates the new ship at the specified location
 
-        Ship newShip = new Ship(this, map, (numShips * 110)+30, 10);
+        Ship newShip = new Ship(this, map, (numShips * 110)+30, 70, 100);
         numShips++;
         return newShip;
     }
@@ -174,7 +174,10 @@ public class GameView extends SurfaceView {
                     continue;
                 }
 
+                Log.d("Collision detection", "The second ship loop is being reached");
+
                 if(secondShip.stillAlive()) {
+                    Log.d("Collision detection", "This method is being called");
                     ship.detectCollision(secondShip);
                 }
                 /*else{
