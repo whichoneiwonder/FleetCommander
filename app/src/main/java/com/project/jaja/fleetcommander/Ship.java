@@ -35,6 +35,8 @@ public class Ship extends GameObject implements Movable, Firing {
 
     private Path path;
 
+    private long time;
+
     //Integer direction values and constants
     private int direction;
     public final static int RIGHT = 0;
@@ -80,6 +82,8 @@ public class Ship extends GameObject implements Movable, Firing {
         this.yCoords = new ArrayList<Integer> ();
 
         this.health = health;
+
+        time = System.currentTimeMillis();
 
 
     }
@@ -178,13 +182,19 @@ public class Ship extends GameObject implements Movable, Firing {
             }
 
             calculateNextSpeed(xCoords.get(0), yCoords.get(0), centreX, centreY);
-            xPosition = xPosition + xSpeed;
-            yPosition = yPosition + ySpeed;
 
-            if(Math.abs(centreX - xCoords.get(0)) <1 && Math.abs(centreY - yCoords.get(0)) <1){
+
+            //setXPosition(xCoords.get(0)- map.getWidth()/2);
+            //setYPosition(yCoords.get(0)-map.getHeight()/2);
+
+            xPosition += xSpeed;
+            yPosition += ySpeed;
+
+
+           if(Math.abs(centreX - xCoords.get(0)) <1 && Math.abs(centreY - yCoords.get(0)) <1){
                xCoords.remove(0);
                yCoords.remove(0);
-            }
+           }
 
             direction = getDirection();
         }
@@ -253,13 +263,8 @@ public class Ship extends GameObject implements Movable, Firing {
         paint.setStyle(Paint.Style.STROKE );
 
 
-        //update the ship's position etc
-        update();
-
         //draw the ship's path
         canvas.drawPath(path,paint);
-
-
         //calculate what rotation the ship is from due right
         float rotationDegrees = (direction*  -45);
         //save the orientation of the canvas
@@ -276,16 +281,34 @@ public class Ship extends GameObject implements Movable, Firing {
 
     }
 
+    public void clearAllButHead(){
+
+        if(xCoords.size() <= 0){
+            return;
+        }
+        int firstX = xCoords.get(0);
+        int firstY = yCoords.get(0);
+        xCoords.clear();
+        yCoords.clear();
+        xCoords.add(firstX);
+        yCoords.add(firstY);
+    }
 
     public void onMoveEvent(MotionEvent event){
         //ignore if it's not a move action
+
+
         if(event.getAction()!= MotionEvent.ACTION_MOVE){
             return;
         }
-
+        int screenX = gameView.getMappedScreenX((int) event.getX());
+        int screenY = gameView.getMappedScreenY((int) event.getY());
         //append the new coordinates to the path
-        xCoords.add((int) event.getX());
-        yCoords.add((int) event.getY());
+        if(xCoords.isEmpty()){
+            time = System.currentTimeMillis();
+        }
+        xCoords.add(screenX);
+        yCoords.add(screenY);
 
 
     }

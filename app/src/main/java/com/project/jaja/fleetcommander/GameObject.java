@@ -74,8 +74,10 @@ public class GameObject{
         int enemyX = testObject.getxPosition();
         int enemyY  = testObject.getyPosition();
 
-        if(enemyX > xPosition && enemyX < xPosition + map.getWidth()
-                && enemyY > yPosition && enemyY < yPosition + map.getHeight()){
+        //if(enemyX > xPosition && enemyX < xPosition + map.getWidth()
+        //        && enemyY > yPosition && enemyY < yPosition + map.getHeight()){
+        if(gameView.getMappedScreenX(enemyX) == gameView.getMappedScreenX(xPosition) &&
+                gameView.getMappedScreenY(enemyY) == gameView.getMappedScreenY(yPosition)){
             //Damage dealing logic
             Log.d("Collision detection","Two Ships are colliding");
             v.vibrate(2000);

@@ -45,6 +45,9 @@ public class GameView extends SurfaceView {
     public int screenwidth;
 
     private long lastClick;
+    private long countdownToMove;
+    private long timeOfLastFrame;
+
     private Panel panel;
 
     private Vibrator v;
@@ -53,6 +56,14 @@ public class GameView extends SurfaceView {
     private int buttonTopY;
     private int buttonRightX;
     private int buttonBottomY;
+
+    private int gridLeft, gridRight, gridTop, gridBottom;
+    public final static int numXGridPoints = 100;
+    public final static int numYGridPoints = 150;
+
+    //a register
+    private Ship shipReceivingInput = null;
+
 
 
     /**
@@ -74,12 +85,20 @@ public class GameView extends SurfaceView {
 
         screenheight = size.y;
         screenwidth = size.x;
-        Log.i("Dimensions", "Screenheight: " + screenheight + "\nScreen Width: " + screenwidth);
 
+        timeOfLastFrame = System.currentTimeMillis();
+        countdownToMove = 0;
 
         panel = new Panel(this);
         ships = new ArrayList<Ship>();
         numShips = 0;
+
+        gridTop = (int) (1.1*panel.getHeight());
+        gridBottom = (int) (screenheight * 0.95);
+        gridLeft = (int) (screenwidth * 0.05);
+        gridRight =  (int) (screenwidth * 0.95);
+        Log.i("Dimensions", gridTop + " : " + gridBottom + " : " + gridLeft + " : " + gridRight );
+        Log.i("Dimensions", "ScreenX: " + 0 + "\ngridX: " + getGridXFromScreenX(55));
         surfaceHolder = getHolder();
         surfaceHolder.addCallback(new SurfaceHolder.Callback() {
 
@@ -128,8 +147,52 @@ public class GameView extends SurfaceView {
 
             }
         });
+    }
 
+    public int getGridXFromScreenX(int screenX){
+        if(screenX >= gridRight){
+            return numXGridPoints -1;
+        }
+        if (screenX <= gridLeft){
+            return 0;
+        }
 
+        double spaceBetweenGridPoints = (gridRight - gridLeft)/((double) numXGridPoints);
+        return (int)(0.5 + (screenX - gridLeft)/spaceBetweenGridPoints);
+
+    }
+
+    public int getGridYFromScreenY(int screenY){
+        if(screenY >= gridBottom){
+            return numYGridPoints -1;
+        }
+        if (screenY <= gridTop){
+            return 0;
+        }
+
+        double spaceBetweenGridPoints = (gridBottom - gridTop)/((double) numYGridPoints);
+        return (int)(0.5 + (screenY - gridTop)/spaceBetweenGridPoints);
+
+    }
+
+    public int getScreenXFromGridX(int gridX){
+        double spaceBetweenGridPoints = (gridRight - gridLeft)/((double) numXGridPoints);
+        return gridLeft + (int) (spaceBetweenGridPoints * gridX);
+    }
+
+    public int getScreenYFromGridY(int gridY){
+        double spaceBetweenGridPoints = (gridBottom - gridTop)/((double) numYGridPoints);
+        return gridTop + (int) (spaceBetweenGridPoints * gridY);
+    }
+
+    public int getMappedScreenX(int eventX){
+        int gridX = getGridXFromScreenX(eventX);
+        return getScreenXFromGridX(gridX);
+    }
+
+    public int getMappedScreenY(int eventY){
+        int gridY = getGridYFromScreenY(eventY);
+        return getScreenYFromGridY(gridY);
     }
 
     /**
@@ -195,9 +258,21 @@ public class GameView extends SurfaceView {
     protected void onDraw(Canvas canvas){
         //Sets the background to the RGB Value
         canvas.drawColor(Color.rgb(0,153,204));
-
+        countdownToMove += System.currentTimeMillis() - timeOfLastFrame;
+        Log.i("Countdown", "Countdown: " + countdownToMove);
         panel.onDraw(canvas);
         renderPauseButton(canvas);
+
+        /*if(countdownToMove >= 500) {
+
+                for(Ship ship : ships){
+                    ship.update();
+                }
+                countdownToMove = 0;
+
+
+        }*/
+
         //Abstract to a function and potentially in the wrong place (should be in ShipSprite)
         //If the ship bounces of an edge it changes direction
         for(Ship ship : ships){
@@ -206,6 +281,7 @@ public class GameView extends SurfaceView {
             //sets the image of the ship to the specified image
             ship.setMap(BitmapFactory.decodeResource(getResources(), resourceID));
 
+            ship.update();
             //draws the ship onto the canvas
             ship.onDraw(canvas);
 
@@ -222,16 +298,9 @@ public class GameView extends SurfaceView {
                     Log.d("Collision detection", "This method is being called");
                     ship.detectCollision(secondShip, v);
                 }
-                /*else{
-                    ships.remove(secondShip);
-                }*/
             }
         }
-
-
-
-
-
+        timeOfLastFrame = System.currentTimeMillis();
 
     }
 
@@ -242,8 +311,7 @@ public class GameView extends SurfaceView {
         return false;
     }
 
-    //a register
-    Ship shipReceivingInput = null;
+
     /**
      * Method used when a ship is tapped on
      * Currently it is just removed from rendering, but this one was for
@@ -254,8 +322,6 @@ public class GameView extends SurfaceView {
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
-        //canvas.drawRect(10, 10, 80,50, button);
 
         if (System.currentTimeMillis() - lastClick > 300) {
             lastClick = System.currentTimeMillis();
@@ -293,8 +359,8 @@ public class GameView extends SurfaceView {
                 }
                 //reset the path
                 if (shipReceivingInput != null) {
-                    shipReceivingInput.getxCoords().clear();
-                    shipReceivingInput.getyCoords().clear();
+
+                    shipReceivingInput.clearAllButHead();
                     //indicate selection
                     shipReceivingInput.setShipSelect(true);
                 }
