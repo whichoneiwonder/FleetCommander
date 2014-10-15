@@ -28,13 +28,15 @@ public class Panel {
     private int rightX;
     private int bottomY;
 
+    private boolean isPaused;
+
     public Panel(GameView gameView){
         this.gameView = gameView;
 
         leftX = 0;
         topY = 0;
         rightX = gameView.screenwidth;
-        bottomY = 80;
+        bottomY = gameView.screenheight/10;
 
         renderedScoreString = null;
         enemyRenderedScoreString = null;
@@ -45,6 +47,7 @@ public class Panel {
         enemyRenderedScore = 10;
         enemyScore = 30;
 
+        isPaused = false;
 
 
     }
@@ -62,6 +65,10 @@ public class Panel {
 
         renderedScoreString = playerRenderedScoreString + " : " + enemyRenderedScoreString;
 
+        if(isPaused){
+            renderedScoreString = "PAUSED";
+        }
+
     }
 
     public void onDraw(Canvas canvas) {
@@ -75,15 +82,24 @@ public class Panel {
         scorePaint.setColor(Color.WHITE);
         scorePaint.setStrokeWidth(4);
         scorePaint.setTextSize(50);
-        canvas.drawRect(0, 0, rightX,80, paint);
+        canvas.drawRect(0, 0, rightX,bottomY, paint);
 
-        canvas.drawText(renderedScoreString, rightX/2 - 50, bottomY/2 + 20, scorePaint);
+        canvas.drawText(renderedScoreString, rightX/2 - ((int) (bottomY*0.75)), bottomY/2 + 20, scorePaint);
 
     }
 
     public int getHeight() {
         return bottomY;
     }
+    public int getWidth() {
+        return rightX;
+    }
+
+    public void setPause(boolean pause) {isPaused = pause;}
+
+    public void clickPause(){ setPause(!isPaused);}
+
+    public boolean isPaused(){return isPaused;}
 
 
 }

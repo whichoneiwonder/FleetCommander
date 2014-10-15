@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.os.Vibrator;
 import android.util.Log;
@@ -47,6 +48,11 @@ public class GameView extends SurfaceView {
     private Panel panel;
 
     private Vibrator v;
+
+    private int buttonLeftX;
+    private int buttonTopY;
+    private int buttonRightX;
+    private int buttonBottomY;
 
 
     /**
@@ -154,6 +160,33 @@ public class GameView extends SurfaceView {
         return newShip;
     }
 
+    protected void renderPauseButton(Canvas canvas){
+        Paint button = new Paint();
+        button.setColor(Color.WHITE);
+        button.setStrokeWidth(0);
+
+        Paint buttonText = new Paint();
+        buttonText.setColor(Color.BLACK);
+        buttonText.setStrokeWidth(10);
+        buttonText.setTextSize(20);
+
+        int pixel_offset = 15;
+
+        buttonLeftX = pixel_offset;
+        buttonTopY = pixel_offset;
+        buttonRightX = panel.getWidth()/5;
+        buttonBottomY = panel.getHeight() - pixel_offset;
+
+        canvas.drawRect(buttonLeftX, buttonTopY, buttonRightX, buttonBottomY, button);
+
+        if(panel.isPaused()) {
+            canvas.drawText("Resume", buttonLeftX + 5, (buttonBottomY - buttonTopY)/2+pixel_offset, buttonText);
+        }
+        else{
+            canvas.drawText("Pause", buttonLeftX + 5, (buttonBottomY - buttonTopY)/2+pixel_offset, buttonText);
+        }
+    }
+
     /**
      * Handles all the rendering of the view
      *
@@ -164,7 +197,7 @@ public class GameView extends SurfaceView {
         canvas.drawColor(Color.rgb(0,153,204));
 
         panel.onDraw(canvas);
-
+        renderPauseButton(canvas);
         //Abstract to a function and potentially in the wrong place (should be in ShipSprite)
         //If the ship bounces of an edge it changes direction
         for(Ship ship : ships){
@@ -202,6 +235,13 @@ public class GameView extends SurfaceView {
 
     }
 
+    public boolean isClickingButton(MotionEvent event){
+        if(event.getX() > buttonLeftX && event.getX() < buttonRightX && event.getY() > buttonTopY && event.getY() < buttonBottomY){
+            return true;
+        }
+        return false;
+    }
+
     //a register
     Ship shipReceivingInput = null;
     /**
@@ -215,66 +255,73 @@ public class GameView extends SurfaceView {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
+        //canvas.drawRect(10, 10, 80,50, button);
+
         if (System.currentTimeMillis() - lastClick > 300) {
-        lastClick = System.currentTimeMillis();
+            lastClick = System.currentTimeMillis();
             synchronized (getHolder()) {
-
-            }
-
-        }
-        //if this is the first part of a touch event
-        if(event.getAction() == event.ACTION_DOWN) {
-
-            //the distance between this event and the ships
-            int minDistance = Integer.MAX_VALUE;//initialised to max, so we can find min
-            int distance;
-
-            //find the closest ship to where you've clicked
-            for(Ship ship:ships) {
-                distance = Math.abs(ship.getXPosition()+ship.getMap().getWidth()/2
-                            - (int) event.getX()) +
-                        Math.abs(ship.getYPosition() + ship.getMap().getHeight()/2
-                                - (int) event.getY());
-                if( distance < minDistance){
-                    minDistance = distance;
-                    shipReceivingInput = ship;
-
+                if (isClickingButton(event)) {
+                    panel.clickPause();
                 }
             }
-            //select a ship only if you've clicked pretty close to it
-            if(minDistance >80 ){
+
+        }
+
+        if (!panel.isPaused()) {
+            //if this is the first part of a touch event
+            if (event.getAction() == event.ACTION_DOWN) {
+
+                //the distance between this event and the ships
+                int minDistance = Integer.MAX_VALUE;//initialised to max, so we can find min
+                int distance;
+
+                //find the closest ship to where you've clicked
+                for (Ship ship : ships) {
+                    distance = Math.abs(ship.getXPosition() + ship.getMap().getWidth() / 2
+                            - (int) event.getX()) +
+                            Math.abs(ship.getYPosition() + ship.getMap().getHeight() / 2
+                                    - (int) event.getY());
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        shipReceivingInput = ship;
+
+                    }
+                }
+                //select a ship only if you've clicked pretty close to it
+                if (minDistance > 80) {
+                    shipReceivingInput = null;
+                }
+                //reset the path
+                if (shipReceivingInput != null) {
+                    shipReceivingInput.getxCoords().clear();
+                    shipReceivingInput.getyCoords().clear();
+                    //indicate selection
+                    shipReceivingInput.setShipSelect(true);
+                }
+
+
+                return true;
+            }
+
+            //if you're dragging your finger
+            if (event.getAction() == MotionEvent.ACTION_MOVE && shipReceivingInput != null) {
+
+                shipReceivingInput.onMoveEvent(event);
+
+                return true;
+            }
+
+            //when you release your finger reset which ship you're interacting with
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                //indicate disselection
+                if (shipReceivingInput != null) {
+                    shipReceivingInput.setShipSelect(false);
+                }
+
                 shipReceivingInput = null;
-            }
-            //reset the path
-            if(shipReceivingInput!= null){
-                shipReceivingInput.getxCoords().clear();
-                shipReceivingInput.getyCoords().clear();
-                //indicate selection
-                shipReceivingInput.setShipSelect(true);
+                return true;
             }
 
-
-
-            return true;
-        }
-
-        //if you're dragging your finger
-        if(event.getAction() == MotionEvent.ACTION_MOVE && shipReceivingInput!= null){
-
-            shipReceivingInput.onMoveEvent(event);
-
-            return true;
-        }
-
-        //when you release your finger reset which ship you're interacting with
-        if(event.getAction() == MotionEvent.ACTION_UP){
-            //indicate disselection
-            if(shipReceivingInput!= null){
-                shipReceivingInput.setShipSelect(false);
-            }
-
-            shipReceivingInput = null;
-            return true;
         }
         return true;
     }

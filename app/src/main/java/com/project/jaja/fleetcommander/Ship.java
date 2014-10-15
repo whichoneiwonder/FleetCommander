@@ -220,6 +220,7 @@ public class Ship extends GameObject implements Movable, Firing {
      *
      */
     public void checkEdges(){
+        int pixel_offset = 5;
         if (getXPosition() > gameView.getWidth() - map.getWidth() - getXSpeed()) {
             setXPosition(gameView.getWidth() - map.getWidth() - getXSpeed());
             return;
@@ -234,8 +235,8 @@ public class Ship extends GameObject implements Movable, Firing {
             return;
         }
 
-        if(getYPosition() + getYSpeed() <= panel.getHeight()){
-            setYPosition(panel.getHeight());
+        if(getYPosition() + getYSpeed() <= panel.getHeight()+pixel_offset){
+            setYPosition(panel.getHeight()+pixel_offset);
         }
 
     }
