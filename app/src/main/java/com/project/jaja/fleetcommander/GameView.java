@@ -165,12 +165,12 @@ public class GameView extends SurfaceView {
         button.setColor(Color.WHITE);
         button.setStrokeWidth(0);
 
+        int pixel_offset = 15;
+
         Paint buttonText = new Paint();
         buttonText.setColor(Color.BLACK);
         buttonText.setStrokeWidth(10);
-        buttonText.setTextSize(20);
-
-        int pixel_offset = 15;
+        buttonText.setTextSize((buttonBottomY - buttonTopY)/3 );
 
         buttonLeftX = pixel_offset;
         buttonTopY = pixel_offset;
