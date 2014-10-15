@@ -6,8 +6,8 @@
 
     <com.project.jaja.fleetcommander.GameView
         android:background="#ccc"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
+        android:layout_width="349dp"
+        android:layout_height="646dp"
         android:paddingLeft="20dp"
         android:paddingBottom="40dp"
         app:exampleDimension="24sp"

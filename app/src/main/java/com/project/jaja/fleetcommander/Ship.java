@@ -20,6 +20,8 @@ public class Ship extends GameObject implements Movable, Firing {
     private ArrayList<Integer> xCoords;
     private ArrayList<Integer> yCoords;
 
+    private Panel panel;
+
     //List of available speeds
     private int [] speeds = {-1,0,1};
     //Randomiser for the speed (will not be used later on)
@@ -51,10 +53,11 @@ public class Ship extends GameObject implements Movable, Firing {
      * @param xPosition - position in x
      * @param yPosition - position in y
      */
-    public Ship(GameView gameView, Bitmap map, int xPosition, int yPosition, int health){
+    public Ship(GameView gameView, Bitmap map, int xPosition, int yPosition, int health, Panel panel){
         this.gameView = gameView;
         this.map = map;
         path = new Path();
+        this.panel = panel;
 
         // set position randomly (not currently used)
         //this.xPosition = (int)(Math.random() * (gameView.getWidth() - map.getWidth())) + 1;
@@ -231,8 +234,8 @@ public class Ship extends GameObject implements Movable, Firing {
             return;
         }
 
-        if(getYPosition() + getYSpeed() < 0){
-            setYPosition(getYSpeed());
+        if(getYPosition() + getYSpeed() <= panel.getHeight()){
+            setYPosition(panel.getHeight());
         }
 
     }

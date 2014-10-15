@@ -5,9 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.Point;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
@@ -45,6 +44,9 @@ public class GameView extends SurfaceView {
     public int screenwidth;
 
     private long lastClick;
+    private Panel panel;
+
+    private Vibrator v;
 
 
     /**
@@ -53,6 +55,8 @@ public class GameView extends SurfaceView {
      */
     public GameView(Context context){
         super(context);
+
+        v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
 
         //Creates the tread
         thread = new GameLoopThread(this);
@@ -65,6 +69,9 @@ public class GameView extends SurfaceView {
         screenheight = size.y;
         screenwidth = size.x;
         Log.i("Dimensions", "Screenheight: " + screenheight + "\nScreen Width: " + screenwidth);
+
+
+        panel = new Panel(this);
         ships = new ArrayList<Ship>();
         numShips = 0;
         surfaceHolder = getHolder();
@@ -142,7 +149,7 @@ public class GameView extends SurfaceView {
 
         //Creates the new ship at the specified location
 
-        Ship newShip = new Ship(this, map, (numShips * 110)+30, 70, 100);
+        Ship newShip = new Ship(this, map, (numShips * 110)+30, 150, 100, panel);
         numShips++;
         return newShip;
     }
@@ -154,7 +161,9 @@ public class GameView extends SurfaceView {
      */
     protected void onDraw(Canvas canvas){
         //Sets the background to the RGB Value
-         canvas.drawColor(Color.rgb(0,153,204));
+        canvas.drawColor(Color.rgb(0,153,204));
+
+        panel.onDraw(canvas);
 
         //Abstract to a function and potentially in the wrong place (should be in ShipSprite)
         //If the ship bounces of an edge it changes direction
@@ -178,7 +187,7 @@ public class GameView extends SurfaceView {
 
                 if(secondShip.stillAlive()) {
                     Log.d("Collision detection", "This method is being called");
-                    ship.detectCollision(secondShip);
+                    ship.detectCollision(secondShip, v);
                 }
                 /*else{
                     ships.remove(secondShip);
