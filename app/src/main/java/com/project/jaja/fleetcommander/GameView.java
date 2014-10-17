@@ -35,8 +35,9 @@ public class GameView extends SurfaceView {
     //Thread that holds the game loop logic
     private GameLoopThread thread;
 
-    //List of all the instantiated ships
+    //List of all the instantiated ships, including the enemy ships
     private ArrayList<Ship> ships;
+    private ArrayList<Ship> enemyShips;
 
     //Integer value holding the number of ships created
     private int numShips;
@@ -58,8 +59,8 @@ public class GameView extends SurfaceView {
     private int buttonBottomY;
 
     private int gridLeft, gridRight, gridTop, gridBottom;
-    public final static int numXGridPoints = 100;
-    public final static int numYGridPoints = 150;
+    public final static int numXGridPoints = 10;
+    public final static int numYGridPoints = 15;
 
     //a register
     private Ship shipReceivingInput = null;
