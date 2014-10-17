@@ -69,7 +69,8 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:hint="@string/ip_filler" />
+            android:hint="@string/ip_filler"
+            android:inputType="phone"/>
 
         <TextView
             android:layout_width="wrap_content"

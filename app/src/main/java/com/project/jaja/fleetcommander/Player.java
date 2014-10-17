@@ -19,6 +19,9 @@ public class Player {
     private int maxSteps;
     private ArrayList<DefaultShip> fleet;
 
+    //Keeping track of which ship colour the player has
+    private String shipColour;
+
     /**
      * Constructs a Player with an IP address, turn, maxSteps and an array of ships
      * @param ip IP Address
@@ -26,11 +29,12 @@ public class Player {
      * @param maxSteps maximum steps available to each Player
      * @param fleet Array of DefaultShips
      */
-    public Player(String ip, int turn, int maxSteps, ArrayList<DefaultShip> fleet) {
+    public Player(String ip, int turn, int maxSteps, ArrayList<DefaultShip> fleet, String shipColour) {
         this.ip = ip;
         this.turn = turn;
         this.maxSteps = maxSteps;
         this.fleet = fleet;
+        this.shipColour = shipColour;
     }
 
     public String getIp() {
@@ -74,7 +78,7 @@ public class Player {
         }
 
         // Checks if correct player IP address has been given
-        if (data.getString("ip") != ip) {
+        if (!data.getString("ip").equals(ip)) {
             System.out.println("player IP address changed, system exiting...");
             System.exit(1);
         }
@@ -148,5 +152,9 @@ public class Player {
         data.put("ships", ships);
 
         return data.toString();
+    }
+
+    public String getShipColour(){
+        return this.shipColour;
     }
 }

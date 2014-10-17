@@ -37,6 +37,7 @@ public class GameView extends SurfaceView {
 
     //List of all the instantiated ships
     private ArrayList<Ship> ships;
+    private ArrayList<Ship> enemyShips;
 
     //Integer value holding the number of ships created
     private int numShips;
@@ -46,16 +47,25 @@ public class GameView extends SurfaceView {
 
     private long lastClick;
 
+    //Keeping track of the two players in the game
+    private Player me;
+    private Player enemy;
+
+
 
     /**
      * Constructor of the view
      * @param context -> Context of the game which comes from NewGameActivity
      */
-    public GameView(Context context){
+    public GameView(Context context, Player me, Player enemy){
         super(context);
 
         //Creates the tread
         thread = new GameLoopThread(this);
+
+        //Players
+        this.me = me;
+        this.enemy = me;
 
         WindowManager window = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = window.getDefaultDisplay();
@@ -125,9 +135,24 @@ public class GameView extends SurfaceView {
      *  one place
      */
     protected void populateShips(){
-        ships.add(newShip(R.drawable.ship_right));
-        ships.add(newShip(R.drawable.ship_right));
-        //ships.add(newShip(R.drawable.player_ship));
+        ArrayList<Ship> temp1 = new ArrayList<Ship>();
+        ArrayList<Ship> temp2 = new ArrayList<Ship>();
+
+            temp1.add(newShip(R.drawable.ship_right));
+            temp1.add(newShip(R.drawable.ship_right));
+            temp1.add(newShip(R.drawable.ship_right));
+
+            temp2.add(newShip(R.drawable.enemy_ship_right));
+            temp2.add(newShip(R.drawable.enemy_ship_right));
+            temp2.add(newShip(R.drawable.enemy_ship_right));
+
+        if(me.getShipColour().equals("blue")){
+            ships = temp1;
+            enemyShips = temp2;
+        } else{
+            ships = temp2;
+            enemyShips = temp1;
+        }
     }
 
     /**
@@ -168,21 +193,17 @@ public class GameView extends SurfaceView {
             ship.onDraw(canvas);
 
             //This will eventually be looping through all GameObjects, not just ships
-            for(GameObject secondShip: ships){
+            for(GameObject secondShip: enemyShips){
                 //We don't want to check if a ship is colliding with itself
-                if(secondShip == ship){
-                    continue;
-                }
 
                 Log.d("Collision detection", "The second ship loop is being reached");
 
                 if(secondShip.stillAlive()) {
                     Log.d("Collision detection", "This method is being called");
                     ship.detectCollision(secondShip);
+                } else{
+                    enemyShips.remove(secondShip);
                 }
-                /*else{
-                    ships.remove(secondShip);
-                }*/
             }
         }
 

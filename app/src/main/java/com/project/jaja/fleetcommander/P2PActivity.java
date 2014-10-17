@@ -177,7 +177,7 @@ public class P2PActivity extends Activity {
      */
     public void clickServer(View view) {
         SERVERIP = getLocalIpAddress();
-        Intent intent = new Intent(P2PActivity.this, PlayActivity.class);
+        Intent intent = new Intent(P2PActivity.this, NewGameActivity.class);
         intent.putExtra("SERVERIP", SERVERIP);
         intent.putExtra("CLIENTIP", CLIENTIP);
         startActivity(intent);
@@ -192,7 +192,7 @@ public class P2PActivity extends Activity {
         CLIENTIP = getLocalIpAddress();
 
         if (!SERVERIP.equals("")) {
-            Intent intent = new Intent(P2PActivity.this, PlayActivity.class);
+            Intent intent = new Intent(P2PActivity.this, NewGameActivity.class);
             intent.putExtra("SERVERIP", SERVERIP);
             intent.putExtra("CLIENTIP", CLIENTIP);
             startActivity(intent);
