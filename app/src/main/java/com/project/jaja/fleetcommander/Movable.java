@@ -6,6 +6,4 @@ package com.project.jaja.fleetcommander;
 public interface Movable {
 
     public void update();
-
-    public void makeMove();
 }

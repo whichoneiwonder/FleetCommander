@@ -40,7 +40,10 @@ public class GameView extends SurfaceView {
     private ArrayList<Ship> enemyShips;
 
     //Integer value holding the number of ships created
-    private int numShips;
+    private int numShipsCreated;
+
+    //An integer dictating how many ships we create
+    private int numShipsInGame;
 
     public int screenheight;
     public int screenwidth;
@@ -57,7 +60,7 @@ public class GameView extends SurfaceView {
      * Constructor of the view
      * @param context -> Context of the game which comes from NewGameActivity
      */
-    public GameView(Context context, Player me, Player enemy){
+    public GameView(Context context, Player me, Player enemy, int numShipsInGame){
         super(context);
 
         //Creates the tread
@@ -66,6 +69,9 @@ public class GameView extends SurfaceView {
         //Players
         this.me = me;
         this.enemy = me;
+
+        //Number of ships to create
+        this.numShipsInGame = numShipsInGame;
 
         WindowManager window = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = window.getDefaultDisplay();
@@ -76,7 +82,7 @@ public class GameView extends SurfaceView {
         screenwidth = size.x;
         Log.i("Dimensions", "Screenheight: " + screenheight + "\nScreen Width: " + screenwidth);
         ships = new ArrayList<Ship>();
-        numShips = 0;
+        numShipsCreated = 0;
         surfaceHolder = getHolder();
         surfaceHolder.addCallback(new SurfaceHolder.Callback() {
 
@@ -135,23 +141,20 @@ public class GameView extends SurfaceView {
      *  one place
      */
     protected void populateShips(){
-        ArrayList<Ship> temp1 = new ArrayList<Ship>();
-        ArrayList<Ship> temp2 = new ArrayList<Ship>();
+        ArrayList<Ship> blue_ships = new ArrayList<Ship>();
+        ArrayList<Ship> red_ships = new ArrayList<Ship>();
 
-            temp1.add(newShip(R.drawable.ship_right));
-            temp1.add(newShip(R.drawable.ship_right));
-            temp1.add(newShip(R.drawable.ship_right));
-
-            temp2.add(newShip(R.drawable.enemy_ship_right));
-            temp2.add(newShip(R.drawable.enemy_ship_right));
-            temp2.add(newShip(R.drawable.enemy_ship_right));
+        for(int i = 0; i < numShipsInGame; i++){
+            blue_ships.add(newShip(R.drawable.ship_right));
+            red_ships.add(newShip(R.drawable.enemy_ship_right));
+        }
 
         if(me.getShipColour().equals("blue")){
-            ships = temp1;
-            enemyShips = temp2;
+            ships = blue_ships;
+            enemyShips = red_ships;
         } else{
-            ships = temp2;
-            enemyShips = temp1;
+            ships = red_ships;
+            enemyShips = blue_ships;
         }
     }
 
@@ -167,8 +170,8 @@ public class GameView extends SurfaceView {
 
         //Creates the new ship at the specified location
 
-        Ship newShip = new Ship(this, map, (numShips * 110)+30, 70, 100);
-        numShips++;
+        Ship newShip = new Ship(this, map, (numShipsCreated * 110)+30, 70, 100);
+        numShipsCreated++;
         return newShip;
     }
 

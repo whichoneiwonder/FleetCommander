@@ -22,7 +22,7 @@ public class Ship extends GameObject implements Movable, Firing {
 
     //List of available speeds
     private int [] speeds = {-1,0,1};
-    //Randomiser for the speed (will not be used later on)
+    //Randomizer for the speed (will not be used later on)
     private Random random;
 
     //boolean whether or not the ship is selected
@@ -73,6 +73,7 @@ public class Ship extends GameObject implements Movable, Firing {
         this.direction = 0;
         this.shipSelect = false;
 
+        //Allows us to keep track of the path that the ship has taken
         this.xCoords = new ArrayList<Integer> ();
         this.yCoords = new ArrayList<Integer> ();
 
@@ -310,10 +311,6 @@ public class Ship extends GameObject implements Movable, Firing {
 
     }
 
-    @Override
-    public void damage(){
-
-    }
 
     @Override
     public boolean calculateShootingRange(GameObject target){
@@ -338,13 +335,6 @@ public class Ship extends GameObject implements Movable, Firing {
         return false;
 
     }
-
-    //Methods implemented from the Movable interface
-    @Override
-    public void makeMove(){
-
-    }
-
     //ACCESSORS AND MUTATORS
 
 

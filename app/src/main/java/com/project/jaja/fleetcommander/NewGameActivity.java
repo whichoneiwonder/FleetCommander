@@ -344,7 +344,8 @@ public class NewGameActivity extends Activity {
                                     sent.setText("Connected to " + CLIENTIP);
                                     out.println("Connected to " + SERVERIP);
                                     countDown.start();
-                                    setContentView(new GameView(getApplicationContext(), myPlayer, opponent));
+                                    setContentView(new GameView(getApplicationContext(), myPlayer
+                                            , opponent, 3));
                                 }
                             });
 
@@ -579,7 +580,8 @@ public class NewGameActivity extends Activity {
                                             line.substring(0, 9).equals("Connected")) {
                                         sent.setText(line);
                                         countDown.start();
-                                        setContentView(new GameView(getApplicationContext(), myPlayer, opponent));
+                                        setContentView(new GameView(getApplicationContext(),
+                                                myPlayer, opponent, 3));
                                     } else {
                                         countDownText.setText(line);
                                     }
