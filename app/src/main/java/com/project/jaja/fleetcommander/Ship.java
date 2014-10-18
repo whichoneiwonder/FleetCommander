@@ -402,9 +402,17 @@ public class Ship extends GameObject implements Movable, Firing {
         return xCoords;
     }
 
+    public void setxCoords(ArrayList<Integer> xCoords){ this.xCoords = xCoords; }
+
+    public void addxCoord(int xCoord){ this.xCoords.add(xCoord);}
+
     public ArrayList<Integer> getyCoords() {
         return yCoords;
     }
+
+    public void setyCoords(ArrayList<Integer> yCoords){ this.yCoords = yCoords;}
+
+    public void addyCoord(int yCoord){ this.yCoords.add(yCoord);}
 
     public Path getPath() {
         return path;
