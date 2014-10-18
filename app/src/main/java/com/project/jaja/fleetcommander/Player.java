@@ -72,7 +72,7 @@ public class Player {
         this.fleet.remove(deadShip);
     }
 
-    public void updateGame(String jsonData) throws JSONException {
+    public void updatePlayer(String jsonData) throws JSONException {
         JSONObject data = new JSONObject(jsonData);
 
         if (data.getInt("maxSteps") != maxSteps) {
