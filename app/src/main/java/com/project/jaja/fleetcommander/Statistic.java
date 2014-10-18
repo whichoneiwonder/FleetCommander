@@ -59,4 +59,24 @@ public class Statistic {
     public void setDateTime(String dateTime) {
         this.dateTime = dateTime;
     }
+
+    /**
+     * This calculates whether you won or lost the game and returns the appropriate string
+     * @return HTML String to be used in the generated table
+     */
+    public String winOrLose() {
+        String result = "";
+
+        if (myScore > opponentScore) {
+            result += "<b><font color=\"green\">WON</font></b>";
+        } else if (myScore < opponentScore) {
+            result += "<b><font color=\"red\">LOST</font></b>";
+        } else {
+            result += "<b>DRAW</b>";
+        }
+
+        String score = Integer.toString(myScore) + "/" + Integer.toString(opponentScore);
+
+        return result + " - " + score;
+    }
 }

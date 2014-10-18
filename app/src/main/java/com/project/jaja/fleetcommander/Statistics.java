@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -30,26 +31,27 @@ public class Statistics {
      * @throws JSONException
      */
     public Statistics(String jsonData) throws JSONException {
-        JSONArray data = (new JSONObject(jsonData)).names();
+        JSONObject data = new JSONObject(jsonData);
 
-        // For each MAC Address
-        for (int i = 0; i < data.length(); i++) {
-            String macAddress = data.getString(i);
+        Iterator<String> keys = data.keys();
+        while (keys.hasNext()) {
+            String mac = keys.next();
+            JSONArray statsListJSON = data.getJSONArray(mac);
             ArrayList<Statistic> statsList = new ArrayList<Statistic>();
 
-            JSONArray statsListJSON = data.getJSONArray(i);
-            // For each Statistic associated with that MAC Address
-            for (int j = 0; j < statsListJSON.length(); j++) {
-                JSONObject statJSON = statsListJSON.getJSONObject(i);
+            for (int i = 0; i < statsListJSON.length(); i++) {
+                JSONObject entry = statsListJSON.getJSONObject(i);
 
-                int myScore = statJSON.getInt("myScore");
-                int opponentScore = statJSON.getInt("opponentScore");
-                String dateTime = statJSON.getString("dateTime");
+                int myScore = entry.getInt("myScore");
+                int opponentScore = entry.getInt("opponentScore");
+                String dateTime = entry.getString("dateTime");
 
                 Statistic stat = new Statistic(myScore, opponentScore, dateTime);
+
                 statsList.add(stat);
             }
-            stats.put(macAddress, statsList);
+
+            stats.put(mac, statsList);
         }
     }
 
@@ -74,6 +76,10 @@ public class Statistics {
         return stats.get(macAddress);
     }
 
+    public Map<String, ArrayList<Statistic>> getStats() {
+        return stats;
+    }
+
     /**
      * Builds a JSON Object using the HashMap and then returns this data as a String
      * @return JSON data as a String
@@ -83,12 +89,12 @@ public class Statistics {
         JSONObject data = new JSONObject();
 
         // For each MAC Address
-        for (String key: stats.keySet()) {
+        for (String key : stats.keySet()) {
             ArrayList<Statistic> statsList = stats.get(key);
             JSONArray keyArray = new JSONArray();
 
             // For each Statistic associated with that MAC Address
-            for (Statistic stat: statsList) {
+            for (Statistic stat : statsList) {
                 JSONObject statJSON = new JSONObject();
                 statJSON.put("dateTime", stat.getDateTime());
                 statJSON.put("opponentScore", stat.getOpponentScore());

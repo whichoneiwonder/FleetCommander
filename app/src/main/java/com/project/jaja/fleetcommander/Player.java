@@ -138,7 +138,7 @@ public class Player {
 
             if (directionsJSON != null) {
                 int len = directionsJSON.length();
-                for (int j = 0;i<len;i++){
+                for (int j = 0; i < len; i++){
                     directionList.add(directionsJSON.getInt(j));
                 }
             }

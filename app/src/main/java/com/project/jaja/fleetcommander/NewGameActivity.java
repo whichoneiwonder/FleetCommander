@@ -117,13 +117,6 @@ public class NewGameActivity extends Activity {
         SERVERIP = intent.getStringExtra("SERVERIP");
         CLIENTIP = intent.getStringExtra("CLIENTIP");
 
-        String statsJSON = intent.getStringExtra("stats");
-        try {
-            stats = new Statistics(statsJSON);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
         WifiManager manager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         WifiInfo info = manager.getConnectionInfo();
         mac = info.getMacAddress();

@@ -35,15 +35,18 @@
         </activity>
         <activity
             android:name=".NewGameActivity"
-            android:screenOrientation="portrait"
-            android:label="@string/title_activity_new_game" >
-
+            android:label="@string/title_activity_new_game"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".PlayActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_play"
             android:theme="@style/FullscreenTheme" >
+        </activity>
+        <activity
+            android:name=".StatisticsActivity"
+            android:label="@string/title_activity_statistics" >
         </activity>
     </application>
 

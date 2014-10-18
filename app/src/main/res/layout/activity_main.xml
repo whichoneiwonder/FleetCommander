@@ -50,6 +50,14 @@
             android:id="@+id/new_game"
             android:layout_gravity="center"
             android:onClick="goToNewGame"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:text="Statistics"
+            android:id="@+id/statistics"
+            android:layout_gravity="left|top"
+            android:onClick="goToStatistics" />
     </FrameLayout>
 
 </FrameLayout>

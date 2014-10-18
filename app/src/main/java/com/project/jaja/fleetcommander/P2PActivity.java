@@ -190,7 +190,6 @@ public class P2PActivity extends Activity {
     public void clickServer(View view) throws JSONException {
         SERVERIP = getLocalIpAddress();
         Intent intent = new Intent(P2PActivity.this, NewGameActivity.class);
-        intent.putExtra("stats", stats.toJSONString());
         intent.putExtra("SERVERIP", SERVERIP);
         intent.putExtra("CLIENTIP", CLIENTIP);
         startActivity(intent);
@@ -206,7 +205,6 @@ public class P2PActivity extends Activity {
 
         if (!SERVERIP.equals("")) {
             Intent intent = new Intent(P2PActivity.this, NewGameActivity.class);
-            intent.putExtra("stats", stats.toJSONString());
             intent.putExtra("SERVERIP", SERVERIP);
             intent.putExtra("CLIENTIP", CLIENTIP);
             startActivity(intent);

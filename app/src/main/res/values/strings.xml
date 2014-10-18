@@ -22,4 +22,8 @@
     <string name="timer">Timer</string>
     <string name="my_ip">My IP</string>
     <string name="waiting">Waiting</string>
+    <string name="title_activity_statistics">Statistics</string>
+    <string name="stats">Statistics</string>
+    <string name="stats_blurb">There is a list of MAC Addresses of opponents, followed by the matches you played together, the date, time and score</string>
+
 </resources>
