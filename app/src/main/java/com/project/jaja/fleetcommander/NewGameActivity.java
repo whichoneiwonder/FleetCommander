@@ -1,7 +1,10 @@
 package com.project.jaja.fleetcommander;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -13,8 +16,6 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-
-import com.project.jaja.fleetcommander.util.SystemUiHider;
 
 import org.json.JSONException;
 
@@ -29,81 +30,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /*
-*   Created by avnishjain and jmcma
+*   Created by avnishjain and jmcma and don't forget Anton :)
 *
 *   Added NewGame button on MainActivity for debugging purposes.
 *   Use this for testing game components when not using the P2P features.
 *
 * */
 public class NewGameActivity extends Activity {
-
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        //Requests the view not to show the top banner
-//        requestWindowFeature(Window.FEATURE_NO_TITLE);
-//
-//        ArrayList<Integer> dirs1 = new ArrayList<Integer>(Arrays.asList(0, 0, 0, 0, 0, 0, 0, 0, 0)){};
-//
-//        ArrayList<DefaultShip> fleetLeft = new ArrayList<DefaultShip>();
-//
-//        // All ships are facing inwards, hence 2 (East) for fleetLeft
-//        Location locLeft1 = new Location(2, 3);
-//        DefaultShip shipLeft1 = new DefaultShip(locLeft1, 2, 100, dirs1);
-//        fleetLeft.add(shipLeft1);
-//
-//        Location locLeft2 = new Location(2, 6);
-//        DefaultShip shipLeft2 = new DefaultShip(locLeft2, 2, 100, dirs1);
-//        fleetLeft.add(shipLeft2);
-//
-//        Location locLeft3 = new Location(2, 9);
-//        DefaultShip shipLeft3 = new DefaultShip(locLeft3, 2, 100, dirs1);
-//        fleetLeft.add(shipLeft3);
-//
-//        ArrayList<DefaultShip> fleetRight = new ArrayList<DefaultShip>();
-//
-//        // All ships are facing inwards, hence 6 (West) for fleetRight
-//        Location locRight1 = new Location(18, 3);
-//        DefaultShip shipRight1 = new DefaultShip(locRight1, 6, 100, dirs1);
-//        fleetRight.add(shipRight1);
-//
-//        Location locRight2 = new Location(18, 6);
-//        DefaultShip shipRight2 = new DefaultShip(locRight2, 6, 100, dirs1);
-//        fleetRight.add(shipRight2);
-//
-//        Location locRight3 = new Location(18, 9);
-//        DefaultShip shipRight3 = new DefaultShip(locRight3, 6, 100, dirs1);
-//        fleetRight.add(shipRight3);
-//
-//
-//        // Server Player always starts play on left of screen
-//        Player myPlayer = new Player("", 0, 10, fleetLeft, "blue");
-//        Player opponent = new Player("", 0, 10, fleetRight, "red");
-//
-//        //Sets the content of the custom view to be that of the Activity
-//        setContentView(new GameView(this, myPlayer, opponent));
-//    }
-//
-//
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.new_game, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        // Handle action bar item clicks here. The action bar will
-//        // automatically handle clicks on the Home/Up button, so long
-//        // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-//        return super.onOptionsItemSelected(item);
-//    }
-//}
 
     // Client IP
     public String CLIENTIP = "";
@@ -165,6 +98,12 @@ public class NewGameActivity extends Activity {
     // Player class associated with other instance
     private Player opponent;
 
+    // This Player's MAC Address
+    private String mac;
+
+    // All game statistics
+    private Statistics stats;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -177,6 +116,17 @@ public class NewGameActivity extends Activity {
         Intent intent = getIntent();
         SERVERIP = intent.getStringExtra("SERVERIP");
         CLIENTIP = intent.getStringExtra("CLIENTIP");
+
+        String statsJSON = intent.getStringExtra("stats");
+        try {
+            stats = new Statistics(statsJSON);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        WifiManager manager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        WifiInfo info = manager.getConnectionInfo();
+        mac = info.getMacAddress();
 
         pauseButton = (Button) findViewById(R.id.pause_button);
         sendButton = (Button) findViewById(R.id.send_button);
@@ -221,15 +171,15 @@ public class NewGameActivity extends Activity {
 
         if (CLIENTIP.equals("")) {
             // Server Player always starts play on left of screen
-            myPlayer = new Player(SERVERIP, 0, 10, fleetLeft, "blue");
-            opponent = new Player(CLIENTIP, 0, 10, fleetRight, "red");
+            myPlayer = new Player(SERVERIP, mac, 0, 10, fleetLeft, "blue");
+            opponent = new Player(CLIENTIP, "",0, 10, fleetRight, "red");
 
             Thread serverThread = new Thread(new ServerThread());
             serverThread.start();
         } else {
             // Client Player always starts play on right of screen
-            myPlayer = new Player(CLIENTIP, 0, 10, fleetRight, "red");
-            opponent = new Player(SERVERIP, 0, 10, fleetLeft, "blue");
+            myPlayer = new Player(CLIENTIP, mac, 0, 10, fleetRight, "red");
+            opponent = new Player(SERVERIP, "", 0, 10, fleetLeft, "blue");
 
             Thread clientThread = new Thread(new ClientThread());
             clientThread.start();
@@ -343,6 +293,7 @@ public class NewGameActivity extends Activity {
                                 public void run() {
                                     sent.setText("Connected to " + CLIENTIP);
                                     out.println("Connected to " + SERVERIP);
+                                    out.println("mac " + mac);
                                     countDown.start();
                                     setContentView(new GameView(getApplicationContext(), myPlayer
                                             , opponent, 3));
@@ -392,8 +343,7 @@ public class NewGameActivity extends Activity {
                             connected = true;
                             while (connected) {
 
-                                line = in.readLine();
-                                line.replaceAll("\\s", "");
+                                line = in.readLine().replaceAll("\\s", "");
 
                                 handler.post(new Runnable() {
                                     @Override
@@ -413,6 +363,8 @@ public class NewGameActivity extends Activity {
                                             pauseButton.setEnabled(true);
                                             pauseButton.setText("Pause");
                                             paused = false;
+                                        } else if (line.startsWith("mac")) {
+                                            opponent.setMacAddress(line.substring(4));
                                         } else if (line.startsWith("{")) {
                                             try {
                                                 opponent.updatePlayer(line);
@@ -542,8 +494,7 @@ public class NewGameActivity extends Activity {
 
                     connected = true;
                     while (connected) {
-                        line = in.readLine();
-                        line.replaceAll("\\s", "");
+                        line = in.readLine().replaceAll("\\s", "");
 
                         handler.post(new Runnable() {
                             @Override
@@ -563,6 +514,9 @@ public class NewGameActivity extends Activity {
                                     pauseButton.setEnabled(true);
                                     pauseButton.setText("Pause");
                                     paused = false;
+                                } else if (line.startsWith("mac")) {
+                                    opponent.setMacAddress(line.substring(4));
+                                    out.println("mac " + mac);
                                 } else if (line.startsWith("{")) {
                                     try {
                                         opponent.updatePlayer(line);

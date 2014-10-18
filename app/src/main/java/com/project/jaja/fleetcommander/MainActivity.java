@@ -1,11 +1,14 @@
 package com.project.jaja.fleetcommander;
 
-import com.project.jaja.fleetcommander.util.SystemUiHider;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+
+import com.project.jaja.fleetcommander.util.SystemUiHider;
+
+import org.json.JSONException;
 
 
 /**
@@ -43,10 +46,26 @@ public class MainActivity extends Activity {
      */
     private SystemUiHider mSystemUiHider;
 
+    // The statistics for all the games this Player has played
+    private Statistics stats;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Intent intent = getIntent();
+
+        if (intent != null) {
+            String jsonData = intent.getStringExtra("stats");
+            try {
+                stats = new Statistics(jsonData);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        } else {
+            stats = new Statistics();
+        }
     }
 
 
@@ -61,6 +80,13 @@ public class MainActivity extends Activity {
 
     public void goToP2P(View view) {
         Intent intent = new Intent(getApplicationContext(), P2PActivity.class);
+
+        try {
+            intent.putExtra("stats", stats.toJSONString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
         startActivity(intent);
     }
 
