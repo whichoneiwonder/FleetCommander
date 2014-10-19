@@ -128,51 +128,19 @@ public class NewGameActivity extends Activity {
         messageField = (EditText) findViewById(R.id.message_field);
         countDown = new MyCount(timeLeft, 1000);
 
-        // All have the same movement list since they have made no movement
-        ArrayList<Integer> dirs1 = new ArrayList<Integer>(Arrays.asList(0, 0, 0, 0, 0, 0, 0, 0, 0)) {
-        };
 
-        ArrayList<DefaultShip> fleetLeft = new ArrayList<DefaultShip>();
-
-        // All ships are facing inwards, hence 2 (East) for fleetLeft
-        Location locLeft1 = new Location(2, 3);
-        DefaultShip shipLeft1 = new DefaultShip(locLeft1, 2, 100, dirs1);
-        fleetLeft.add(shipLeft1);
-
-        Location locLeft2 = new Location(2, 6);
-        DefaultShip shipLeft2 = new DefaultShip(locLeft2, 2, 100, dirs1);
-        fleetLeft.add(shipLeft2);
-
-        Location locLeft3 = new Location(2, 9);
-        DefaultShip shipLeft3 = new DefaultShip(locLeft3, 2, 100, dirs1);
-        fleetLeft.add(shipLeft3);
-
-        ArrayList<DefaultShip> fleetRight = new ArrayList<DefaultShip>();
-
-        // All ships are facing inwards, hence 6 (West) for fleetRight
-        Location locRight1 = new Location(18, 3);
-        DefaultShip shipRight1 = new DefaultShip(locRight1, 6, 100, dirs1);
-        fleetRight.add(shipRight1);
-
-        Location locRight2 = new Location(18, 6);
-        DefaultShip shipRight2 = new DefaultShip(locRight2, 6, 100, dirs1);
-        fleetRight.add(shipRight2);
-
-        Location locRight3 = new Location(18, 9);
-        DefaultShip shipRight3 = new DefaultShip(locRight3, 6, 100, dirs1);
-        fleetRight.add(shipRight3);
 
         if (CLIENTIP.equals("")) {
             // Server Player always starts play on left of screen
-            myPlayer = new Player(SERVERIP, mac, 0, 10, fleetLeft, "blue");
-            opponent = new Player(CLIENTIP, "",0, 10, fleetRight, "red");
+            myPlayer = new Player(SERVERIP, mac, 0, 10, "blue");
+            opponent = new Player(CLIENTIP, "",0, 10, "red");
 
             Thread serverThread = new Thread(new ServerThread());
             serverThread.start();
         } else {
             // Client Player always starts play on right of screen
-            myPlayer = new Player(CLIENTIP, mac, 0, 10, fleetRight, "red");
-            opponent = new Player(SERVERIP, "", 0, 10, fleetLeft, "blue");
+            myPlayer = new Player(CLIENTIP, mac, 0, 10, "red");
+            opponent = new Player(SERVERIP, "", 0, 10, "blue");
 
             Thread clientThread = new Thread(new ClientThread());
             clientThread.start();

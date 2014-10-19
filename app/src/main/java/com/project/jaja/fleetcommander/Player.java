@@ -23,24 +23,26 @@ public class Player {
     // The maximum amount of steps a Player can make with each DefaultSHip
     private int maxSteps;
 
-    private ArrayList<DefaultShip> fleet;
+    // The fleet of Ships
+    private ArrayList<Ship> fleet;
 
     //Keeping track of which ship colour the player has
     private String shipColour;
 
     /**
-     * Constructs a Player with an IP address, turn, maxSteps and an array of ships
+     * Constructs a Player with an IP address, MAC Address, turn, maxSteps and an array of ships -
+     * a fleet and a ship colour
      * @param ip IP Address
+     * @param macAddress MAC Address
      * @param turn Turn number
-     * @param maxSteps maximum steps available to each Player
-     * @param fleet Array of DefaultShips
+     * @param maxSteps Maximum steps taken per turn
+     * @param shipColour Colour of the Ship
      */
-    public Player(String ip, String macAddress, int turn, int maxSteps, ArrayList<DefaultShip> fleet, String shipColour) {
+    public Player(String ip, String macAddress, int turn, int maxSteps, String shipColour) {
         this.ip = ip;
         this.macAddress = macAddress;
         this.turn = turn;
         this.maxSteps = maxSteps;
-        this.fleet = fleet;
         this.shipColour = shipColour;
     }
 
@@ -81,12 +83,16 @@ public class Player {
         this.maxSteps = maxSteps;
     }
 
-    public ArrayList<DefaultShip> getFleet() {
+    public ArrayList<Ship> getFleet() {
         return fleet;
     }
 
-    public void setFleet(ArrayList<DefaultShip> fleet) {
+    public void setFleet(ArrayList<Ship> fleet) {
         this.fleet = fleet;
+    }
+
+    public void removeShipFromFleet(Ship deadShip){
+        this.fleet.remove(deadShip);
     }
 
     public void updatePlayer(String jsonData) throws JSONException {
@@ -126,18 +132,35 @@ public class Player {
         for (int i = 0; i < maxShips; i++) {
             JSONObject shipJSON = ships.getJSONObject(i);
             JSONObject location = shipJSON.getJSONObject("loc");
+            JSONObject path = shipJSON.getJSONObject("path");
 
-            DefaultShip ship = fleet.get(i);
-            Location loc = new Location(location.getInt("x"), location.getInt("y"));
-            ship.setLoc(loc);
+            Ship ship = fleet.get(i);
+
+            //Removing this for now, seeing if we can get the ship to follow the path
+            //that it is passed
+            //Location loc = new Location(location.getInt("x"), location.getInt("y"));
+            //ship.setLoc(loc);
             ship.setDir(shipJSON.getInt("dir"));
             ship.setHealth(shipJSON.getInt("health"));
+
+            //Adding the x and y coordinates from the json path arrays to the ships
+            JSONArray xCoords = path.getJSONArray("xCoordsPath");
+            JSONArray yCoords = path.getJSONArray("yCoordsPath");
+
+            //Both JSON arrays should have the same length as we cannot have an x coord
+            //without a y coord
+            for(int j = 0; j < xCoords.length(); j++ ){
+                ship.addxCoord(xCoords.getInt(j));
+                ship.addyCoord(yCoords.getInt(j));
+            }
+
 
             JSONArray directionsJSON = shipJSON.getJSONArray("dir_list");
             ArrayList<Integer> directionList = new ArrayList<Integer>();
 
             if (directionsJSON != null) {
                 int len = directionsJSON.length();
+
                 for (int j = 0; i < len; i++){
                     directionList.add(directionsJSON.getInt(j));
                 }
@@ -155,7 +178,7 @@ public class Player {
         data.put("maxSteps", maxSteps);
 
         JSONArray ships = new JSONArray();
-        for (DefaultShip ship: fleet) {
+        for (Ship ship: fleet) {
             JSONObject shipJSON = new JSONObject();
             shipJSON.put("health", ship.getHealth());
 
@@ -164,6 +187,13 @@ public class Player {
             locJSON.put("x", loc.getX());
             locJSON.put("y", loc.getY());
             shipJSON.put("loc", locJSON);
+
+            //This allows us to have reference to the path that
+            //the user has drawn for that ship
+            JSONObject pathJSON = new JSONObject();
+            pathJSON.put("xCoordsPath", ship.getxCoords());
+            pathJSON.put("yCoordsPath", ship.getyCoords());
+            shipJSON.put("path", pathJSON);
 
             shipJSON.put("dir", ship.getDir());
             ArrayList<Integer> dirList = ship.getDirectionList();
