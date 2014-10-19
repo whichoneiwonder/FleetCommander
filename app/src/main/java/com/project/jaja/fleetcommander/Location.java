@@ -1,4 +1,4 @@
-package com.project.jaja.fleetcommander.code;
+package com.project.jaja.fleetcommander;
 
 /**
  * Created by anty on 5/09/14.

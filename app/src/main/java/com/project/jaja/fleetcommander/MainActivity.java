@@ -1,11 +1,12 @@
 package com.project.jaja.fleetcommander;
 
-import com.project.jaja.fleetcommander.util.SystemUiHider;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+
+import com.project.jaja.fleetcommander.util.SystemUiHider;
 
 
 /**
@@ -43,6 +44,9 @@ public class MainActivity extends Activity {
      */
     private SystemUiHider mSystemUiHider;
 
+    // The statistics for all the games this Player has played
+    private Statistics stats;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,6 +70,11 @@ public class MainActivity extends Activity {
 
     public void goToNewGame(View view) {
         Intent intent = new Intent(getApplicationContext(), NewGameActivity.class);
+        startActivity(intent);
+    }
+
+    public void goToStatistics(View view) {
+        Intent intent = new Intent(getApplicationContext(), StatisticsActivity.class);
         startActivity(intent);
     }
 }

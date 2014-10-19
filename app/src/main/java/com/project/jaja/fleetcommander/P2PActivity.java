@@ -12,6 +12,8 @@ import android.widget.TextView;
 
 import com.project.jaja.fleetcommander.util.SystemUiHider;
 
+import org.json.JSONException;
+
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -59,6 +61,9 @@ public class P2PActivity extends Activity {
     // Associated with the IP EditText field in the UI
     private EditText serverIpField;
 
+    // Statistics for this Player
+    private Statistics stats;
+
     // Handler for UI and socket connections
     private Handler handler = new Handler();
 
@@ -70,6 +75,13 @@ public class P2PActivity extends Activity {
         serverIpField = (EditText) findViewById(R.id.server_ip);
         TextView myIP = (TextView) findViewById(R.id.myIP);
         myIP.setText("My IP is: " + getLocalIpAddress());
+        Intent intent = getIntent();
+        String statsJSON = intent.getStringExtra("stats");
+        try {
+            stats = new Statistics(statsJSON);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         final View controlsView = findViewById(R.id.fullscreen_content_controls);
         final View contentView = findViewById(R.id.fullscreen_content);
@@ -175,9 +187,9 @@ public class P2PActivity extends Activity {
      * This function activates the ServerThread and displays this device's IP address
      * @param view This view
      */
-    public void clickServer(View view) {
+    public void clickServer(View view) throws JSONException {
         SERVERIP = getLocalIpAddress();
-        Intent intent = new Intent(P2PActivity.this, PlayActivity.class);
+        Intent intent = new Intent(P2PActivity.this, NewGameActivity.class);
         intent.putExtra("SERVERIP", SERVERIP);
         intent.putExtra("CLIENTIP", CLIENTIP);
         startActivity(intent);
@@ -187,12 +199,12 @@ public class P2PActivity extends Activity {
      * This function activates the ClientThread given the correct IP address has been entered
      * @param view This view
      */
-    public void clickClient(View view) {
+    public void clickClient(View view) throws JSONException {
         SERVERIP = serverIpField.getText().toString();
         CLIENTIP = getLocalIpAddress();
 
         if (!SERVERIP.equals("")) {
-            Intent intent = new Intent(P2PActivity.this, PlayActivity.class);
+            Intent intent = new Intent(P2PActivity.this, NewGameActivity.class);
             intent.putExtra("SERVERIP", SERVERIP);
             intent.putExtra("CLIENTIP", CLIENTIP);
             startActivity(intent);

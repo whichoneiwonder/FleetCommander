@@ -1,4 +1,4 @@
-package com.project.jaja.fleetcommander.code;
+package com.project.jaja.fleetcommander;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -11,13 +11,22 @@ import java.util.ArrayList;
  * This class looks after the Player class and details
  */
 public class Player {
+    // This Player's IP address
     private String ip;
 
-    // Will implement if we have time
-    // private Statistic stats;
+    // This Player's MAC address
+    private String macAddress;
+
+    // Current turn number, used for fraud detection when updating opponent player
     private int turn = 0;
+
+    // The maximum amount of steps a Player can make with each DefaultSHip
     private int maxSteps;
+
     private ArrayList<DefaultShip> fleet;
+
+    //Keeping track of which ship colour the player has
+    private String shipColour;
 
     /**
      * Constructs a Player with an IP address, turn, maxSteps and an array of ships
@@ -26,12 +35,15 @@ public class Player {
      * @param maxSteps maximum steps available to each Player
      * @param fleet Array of DefaultShips
      */
-    public Player(String ip, int turn, int maxSteps, ArrayList<DefaultShip> fleet) {
+    public Player(String ip, String macAddress, int turn, int maxSteps, ArrayList<DefaultShip> fleet, String shipColour) {
         this.ip = ip;
+        this.macAddress = macAddress;
         this.turn = turn;
         this.maxSteps = maxSteps;
         this.fleet = fleet;
+        this.shipColour = shipColour;
     }
+
 
     public String getIp() {
         return ip;
@@ -39,6 +51,18 @@ public class Player {
 
     public void setIp(String ip) {
         this.ip = ip;
+    }
+
+    public String getMacAddress() {
+        return macAddress;
+    }
+
+    public void setMacAddress(String macAddress) {
+        this.macAddress = macAddress;
+    }
+
+    public void setShipColour(String shipColour) {
+        this.shipColour = shipColour;
     }
 
     public int getTurn() {
@@ -74,8 +98,13 @@ public class Player {
         }
 
         // Checks if correct player IP address has been given
-        if (data.getString("ip") != ip) {
+        if (!data.getString("ip").equals(ip)) {
             System.out.println("player IP address changed, system exiting...");
+            System.exit(1);
+        }
+
+        if (!data.getString("mac").equals(macAddress)) {
+            System.out.println("player MAC address changed, system exiting...");
             System.exit(1);
         }
 
@@ -109,7 +138,7 @@ public class Player {
 
             if (directionsJSON != null) {
                 int len = directionsJSON.length();
-                for (int j = 0;i<len;i++){
+                for (int j = 0; i < len; i++){
                     directionList.add(directionsJSON.getInt(j));
                 }
             }
@@ -121,6 +150,7 @@ public class Player {
     public String toJSONString() throws JSONException {
         JSONObject data = new JSONObject();
         data.put("ip", ip);
+        data.put("mac", macAddress);
         data.put("turn", turn);
         data.put("maxSteps", maxSteps);
 
@@ -148,5 +178,9 @@ public class Player {
         data.put("ships", ships);
 
         return data.toString();
+    }
+
+    public String getShipColour(){
+        return shipColour;
     }
 }
