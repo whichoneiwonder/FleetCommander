@@ -9,7 +9,7 @@ import android.view.MotionEvent;
 
 import java.util.ArrayList;
 import java.util.Random;
-
+import android.util.Log;
 /**
  * Created by avnishjain and jmcma on 19/09/14.
  */
@@ -285,14 +285,10 @@ public class Ship extends GameObject implements Movable, Firing {
         paint.setStrokeWidth(3);
         paint.setStyle(Paint.Style.STROKE );
 
-
-        //update the ship's position etc
-        update();
-
         //draw the ship's path
         canvas.drawPath(path,paint);
 
-
+        update();
         //calculate what rotation the ship is from due right
         float rotationDegrees = (direction*  -45);
         //save the orientation of the canvas
