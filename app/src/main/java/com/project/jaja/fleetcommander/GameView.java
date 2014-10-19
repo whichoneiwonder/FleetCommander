@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.Point;
 import android.os.Vibrator;
 import android.util.Log;
@@ -72,7 +71,7 @@ public class GameView extends SurfaceView {
     private Player me;
     private Player enemy;
 
-
+    private boolean noClick = false;
 
     /**
      * Constructor of the view
@@ -179,6 +178,9 @@ public class GameView extends SurfaceView {
         return panel;
     }
 
+    public void setNoClick(boolean noClick) {
+        this.noClick = noClick;
+    }
 
     /**
      *  Method call that populates the ArrayList.
@@ -362,11 +364,17 @@ public class GameView extends SurfaceView {
 
 //onTouchEvent
     public boolean onTouchEvent(MotionEvent event) {
-
+        String test = null;
+        if (noClick) {
+            test = "true";
+        } else {
+            test = "false";
+        }
+        Log.d("touchme", "noClick set to " + test);
         if (System.currentTimeMillis() - lastClick > 300) {
             lastClick = System.currentTimeMillis();
             synchronized (getHolder()) {
-                if (isClickingButton(event)) {
+                if (isClickingButton(event) && !noClick) {
                     panel.clickPause();
                 }
             }

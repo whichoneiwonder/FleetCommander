@@ -1,5 +1,7 @@
 package com.project.jaja.fleetcommander;
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -99,25 +101,26 @@ public class Player {
         JSONObject data = new JSONObject(jsonData);
 
         if (data.getInt("maxSteps") != maxSteps) {
-            System.out.println("maxSteps changed, system exiting...");
+            Log.d("playercheck", "maxSteps changed, system exiting...");
             System.exit(1);
         }
 
         // Checks if correct player IP address has been given
         if (!data.getString("ip").equals(ip)) {
-            System.out.println("player IP address changed, system exiting...");
+            Log.d("playercheck", "player IP address changed, system exiting...");
             System.exit(1);
         }
 
-        if (!data.getString("mac").equals(macAddress)) {
-            System.out.println("player MAC address changed, system exiting...");
+        String mac = data.getString("mac");
+        if (!(mac.equals(macAddress) || mac.equals(""))) {
+            Log.d("playercheck", "player MAC address changed, system exiting...");
             System.exit(1);
         }
 
         // Checks if the correct turn has been given
         Integer newTurn = data.getInt("turn");
         if (newTurn != turn + 1) {
-            System.out.println("Turn " + newTurn.toString() + " has been given, instead of " +
+            Log.d("playercheck", "Turn " + newTurn.toString() + " has been given, instead of " +
                     Integer.toString(turn + 1) + ". System exiting...");
             System.exit(1);
         } else {
