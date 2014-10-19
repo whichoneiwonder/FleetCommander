@@ -268,6 +268,7 @@ public class GameView extends SurfaceView {
 
                 if(enemyShip.stillAlive()) {
                     myShip.detectCollision(enemyShip, v);
+                    myShip.calculateShootingRange(enemyShip);
                 } else{
                     enemy.removeShipFromFleet(enemyShip);
                 }

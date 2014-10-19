@@ -84,7 +84,7 @@ public class GameObject{
                 int playerDirection = ((Ship) this).getDirection();
 
                 //Case 1: Head on collision
-                if(Math.abs(enemyDirection - playerDirection) == 2){
+                if(Math.abs(enemyDirection - playerDirection) == 4){
                     this.decreaseHealth(testObject.getHealth());
                     testObject.decreaseHealth(this.getHealth());
                 }
@@ -127,14 +127,14 @@ public class GameObject{
                     switch(playerDirection){
                         //Player is facing up, thus if the enemy y is greater than
                         //the player y we know that the player is t-boning the enemy
-                        case 0:
+                        case 6:
                             if(yPosition < enemyY){
                                 testObject.kill();
                             } else{
                                 this.kill();
                             }
                         //Player is facing left, we can just reverse the condition above
-                        case 1:
+                        case 4:
                             if(yPosition < enemyY){
                                 testObject.kill();
                             } else{
@@ -149,7 +149,7 @@ public class GameObject{
                                 testObject.kill();
                             }
                         //Player is facing right, same as left
-                        case 3:
+                        case 0:
                             if(yPosition < enemyY){
                                 testObject.kill();
                             } else{
