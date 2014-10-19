@@ -75,13 +75,7 @@ public class P2PActivity extends Activity {
         serverIpField = (EditText) findViewById(R.id.server_ip);
         TextView myIP = (TextView) findViewById(R.id.myIP);
         myIP.setText("My IP is: " + getLocalIpAddress());
-        Intent intent = getIntent();
-        String statsJSON = intent.getStringExtra("stats");
-        try {
-            stats = new Statistics(statsJSON);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+       
 
         final View controlsView = findViewById(R.id.fullscreen_content_controls);
         final View contentView = findViewById(R.id.fullscreen_content);

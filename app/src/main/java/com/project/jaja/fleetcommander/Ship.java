@@ -33,6 +33,8 @@ public class Ship extends GameObject implements Movable, Firing {
 
     private Path path;
 
+    private Panel panel;
+
     //Integer direction values and constants
     private int direction;
     public final static int RIGHT = 0;
@@ -51,11 +53,11 @@ public class Ship extends GameObject implements Movable, Firing {
      * @param xPosition - position in x
      * @param yPosition - position in y
      */
-    public Ship(GameView gameView, Bitmap map, int xPosition, int yPosition, int health){
+    public Ship(GameView gameView, Bitmap map, int xPosition, int yPosition, int health, Panel panel){
         this.gameView = gameView;
         this.map = map;
         path = new Path();
-
+        this.panel = panel;
         // set position randomly (not currently used)
         //this.xPosition = (int)(Math.random() * (gameView.getWidth() - map.getWidth())) + 1;
         //this.xPosition = (int)(Math.random() * (gameView.getHeight() - map.getHeight())) + 1;
@@ -212,12 +214,10 @@ public class Ship extends GameObject implements Movable, Firing {
         }
     }
 
-    /**
-     *  If the ship is on the edge of the view, then the speeds are reversed
-     *  If not, then the ship maintains its speed and therefore direction.
-     *
-     */
     public void checkEdges(){
+
+        int pixel_offset = 5;
+
         if (getXPosition() > gameView.getWidth() - map.getWidth() - getXSpeed()) {
             setXPosition(gameView.getWidth() - map.getWidth() - getXSpeed());
             return;
@@ -232,11 +232,47 @@ public class Ship extends GameObject implements Movable, Firing {
             return;
         }
 
-        if(getYPosition() + getYSpeed() < 0){
-            setYPosition(getYSpeed());
+        if(getYPosition() + getYSpeed() <= panel.getHeight()+pixel_offset){
+            setYPosition(panel.getHeight()+pixel_offset);
         }
 
     }
+
+    public void clearAllButHead(){
+
+        if(xCoords.size() <= 0){
+            return;
+        }
+        int firstX = xCoords.get(0);
+        int firstY = yCoords.get(0);
+        xCoords.clear();
+        yCoords.clear();
+        xCoords.add(firstX);
+        yCoords.add(firstY);
+    }
+
+//On Move Event Body
+
+    public void onMoveEvent(MotionEvent event){
+        //ignore if it's not a move action
+
+
+        if(event.getAction()!= MotionEvent.ACTION_MOVE){
+            return;
+        }
+        int screenX = gameView.getMappedScreenX((int) event.getX());
+        int screenY = gameView.getMappedScreenY((int) event.getY());
+        //append the new coordinates to the path
+        if(xCoords.isEmpty()){
+
+        }
+        xCoords.add(screenX);
+        yCoords.add(screenY);
+
+
+    }
+
+
 
     /**OnDraw method called when the sprite is to be drawn to the canvas view
      *
@@ -272,22 +308,6 @@ public class Ship extends GameObject implements Movable, Firing {
 
 
     }
-
-
-    public void onMoveEvent(MotionEvent event){
-        //ignore if it's not a move action
-        if(event.getAction()!= MotionEvent.ACTION_MOVE){
-            return;
-        }
-
-        //append the new coordinates to the path
-        xCoords.add((int) event.getX());
-        yCoords.add((int) event.getY());
-
-
-    }
-
-
 
     /**
      *

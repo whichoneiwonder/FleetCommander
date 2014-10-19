@@ -1,6 +1,7 @@
 package com.project.jaja.fleetcommander;
 
 import android.graphics.Bitmap;
+import android.os.Vibrator;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -67,16 +68,16 @@ public class GameObject{
      * @param testObject the object we are checking for collision
      * @return returns true if collision is occuring
      */
-    public boolean detectCollision(GameObject testObject){
+    public boolean detectCollision(GameObject testObject, Vibrator v){
 
         Log.d("Collision detection", "detectionCollision() is being called");
         int enemyX = testObject.getxPosition();
         int enemyY  = testObject.getyPosition();
 
-        if(enemyX > xPosition && enemyX < xPosition + map.getWidth()
-                && enemyY > yPosition && enemyY < yPosition + map.getHeight()){
-            //Damage dealing logic
+        if(gameView.getMappedScreenX(enemyX) == gameView.getMappedScreenX(xPosition) &&
+            gameView.getMappedScreenY(enemyY) == gameView.getMappedScreenY(yPosition) ){//Damage dealing logic
             Log.d("Collision detection","Two Ships are colliding");
+            v.vibrate(2000);
             //We deal different ammounts of damage based on what type of collision it is
             if(testObject instanceof Ship){
                 int enemyDirection = ((Ship) testObject).getDirection();
