@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -75,10 +76,13 @@ public class NewGameActivity extends Activity {
     private Button pauseButton;
 
     // Associated with the sending of Strings in the UI
-    private Button sendButton;
+    // private Button sendButton;
 
     // The field where the String is entered which will be sent
-    private EditText messageField;
+    // private EditText messageField;
+
+    // The GameView within which the game is played
+    private GameView gv;
 
     // Countdown timer
     private MyCount countDown;
@@ -122,13 +126,11 @@ public class NewGameActivity extends Activity {
         mac = info.getMacAddress();
 
         pauseButton = (Button) findViewById(R.id.pause_button);
-        sendButton = (Button) findViewById(R.id.send_button);
+//        sendButton = (Button) findViewById(R.id.send_button);
         sent = (TextView) findViewById(R.id.sent);
         countDownText = (TextView) findViewById(R.id.count_down_text);
-        messageField = (EditText) findViewById(R.id.message_field);
+//        messageField = (EditText) findViewById(R.id.message_field);
         countDown = new MyCount(timeLeft, 1000);
-
-
 
         if (CLIENTIP.equals("")) {
             // Server Player always starts play on left of screen
@@ -145,7 +147,7 @@ public class NewGameActivity extends Activity {
             Thread clientThread = new Thread(new ClientThread());
             clientThread.start();
         }
-
+        gv = new GameView(getApplicationContext(), myPlayer, opponent, 3);
     }
 
     @Override
@@ -203,7 +205,7 @@ public class NewGameActivity extends Activity {
                     myPlayer.setTurn(1);
                     try {
                         out.println(myPlayer.toJSONString());
-                        countDownText.setText("DONE");
+//                        countDownText.setText("DONE");
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -253,62 +255,70 @@ public class NewGameActivity extends Activity {
                                 @Override
                                 public void run() {
                                     sent.setText("Connected to " + CLIENTIP);
-                                    out.println("Connected to " + SERVERIP);
-                                    out.println("mac " + mac);
+                                    out.print(mac + " " + SERVERIP);
                                     countDown.start();
-                                    setContentView(new GameView(getApplicationContext(), myPlayer
-                                            , opponent, 3));
+                                    setContentView(gv);
                                 }
                             });
 
                             // Sends string across to another phone
                             // Duplication is necessary
-                            sendButton.setOnClickListener(new View.OnClickListener() {
-                                public void onClick(View v) {
-                                    handler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            out.println(messageField.getText().toString());
-                                            messageField.setText("");
-                                        }
-                                    });
-                                }
-                            });
+//                            sendButton.setOnClickListener(new View.OnClickListener() {
+//                                public void onClick(View v) {
+//                                    handler.post(new Runnable() {
+//                                        @Override
+//                                        public void run() {
+//                                            out.println(messageField.getText().toString());
+//                                            messageField.setText("");
+//                                        }
+//                                    });
+//                                }
+//                            });
 
                             // Enables pause on other phone
                             // Duplication is necessary
-                            pauseButton.setOnClickListener(new View.OnClickListener() {
-                                public void onClick(View v) {
-                                    handler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            if (paused) {
-                                                countDown = new MyCount(timeLeft, 1000);
-                                                countDown.start();
-                                                paused = false;
-                                                out.println("PLAY");
-                                                sent.setText("Play sent");
-                                                pauseButton.setText("Pause");
-                                            } else {
-                                                countDown.cancel();
-                                                paused = true;
-                                                out.println("PAUSE");
-                                                sent.setText("Pause sent");
-                                                pauseButton.setText("Play");
-                                            }
-                                        }
-                                    });
-                                }
-                            });
+//                            pauseButton.setOnClickListener(new View.OnClickListener() {
+//                                public void onClick(View v) {
+//                                    handler.post(new Runnable() {
+//                                        @Override
+//                                        public void run() {
+//                                            if (paused) {
+//                                                countDown = new MyCount(timeLeft, 1000);
+//                                                countDown.start();
+//                                                paused = false;
+//                                                out.println("PLAY");
+//                                                sent.setText("Play sent");
+//                                                pauseButton.setText("Pause");
+//                                            } else {
+//                                                countDown.cancel();
+//                                                paused = true;
+//                                                out.println("PAUSE");
+//                                                sent.setText("Pause sent");
+//                                                pauseButton.setText("Play");
+//                                            }
+//                                        }
+//                                    });
+//                                }
+//                            });
 
                             connected = true;
                             while (connected) {
 
-                                line = in.readLine().replaceAll("\\s", "");
+                                line = in.readLine();
 
                                 handler.post(new Runnable() {
                                     @Override
                                     public void run() {
+//                                        if (gv.getPanel().isPaused()) {
+//                                            countDown.cancel();
+//                                            paused = true;
+//                                            out.println("PAUSE");
+//                                        } else if (!gv.getPanel().isPaused()) {
+//                                            countDown = new MyCount(timeLeft, 1000);
+//                                            countDown.start();
+//                                            paused = false;
+//                                            out.println("PLAY");
+//                                        }
                                         if (line.equals("GAME END")) {
                                             connected = false;
                                         }  else if (line.equals("PAUSE")) {
@@ -320,20 +330,15 @@ public class NewGameActivity extends Activity {
                                         } else if (line.equals("PLAY")) {
                                             countDown = new MyCount(timeLeft, 1000);
                                             countDown.start();
-                                            sent.setText("Play received");
+//                                            sent.setText("Play received");
                                             pauseButton.setEnabled(true);
-                                            pauseButton.setText("Pause");
+//                                            pauseButton.setText("Pause");
                                             paused = false;
                                         } else if (line.startsWith("mac")) {
                                             opponent.setMacAddress(line.substring(4));
                                         } else if (line.startsWith("{")) {
                                             try {
                                                 opponent.updatePlayer(line);
-                                            } catch (JSONException e) {
-                                                e.printStackTrace();
-                                            }
-
-                                            try {
                                                 countDownText.setText(opponent.toJSONString());
                                             } catch (JSONException e) {
                                                 e.printStackTrace();
@@ -348,7 +353,7 @@ public class NewGameActivity extends Activity {
                             handler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    out.println("GAME END");
+                                    out.print("GAME END");
                                 }
                             });
                             break;
@@ -415,51 +420,63 @@ public class NewGameActivity extends Activity {
 
                     // Sends string across to another phone
                     // Duplication is necessary
-                    sendButton.setOnClickListener(new View.OnClickListener() {
-                        public void onClick(View v) {
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    out.println(messageField.getText().toString());
-                                    messageField.setText("");
-                                }
-                            });
-                        }
-                    });
+//                    sendButton.setOnClickListener(new View.OnClickListener() {
+//                        public void onClick(View v) {
+//                            handler.post(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    out.println(messageField.getText().toString());
+//                                    messageField.setText("");
+//                                }
+//                            });
+//                        }
+//                    });
 
                     // Enables pause on other phone
                     // Duplication is necessary
-                    pauseButton.setOnClickListener(new View.OnClickListener() {
-                        public void onClick(View v) {
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (paused) {
-                                        countDown = new MyCount(timeLeft, 1000);
-                                        countDown.start();
-                                        paused = false;
-                                        out.println("PLAY");
-                                        sent.setText("Play sent");
-                                        pauseButton.setText("Pause");
-                                    } else {
-                                        countDown.cancel();
-                                        paused = true;
-                                        out.println("PAUSE");
-                                        sent.setText("Pause sent");
-                                        pauseButton.setText("Play");
-                                    }
-                                }
-                            });
-                        }
-                    });
+//                    pauseButton.setOnClickListener(new View.OnClickListener() {
+//                        public void onClick(View v) {
+//                            handler.post(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    if (paused) {
+//                                        countDown = new MyCount(timeLeft, 1000);
+//                                        countDown.start();
+//                                        paused = false;
+//                                        out.println("PLAY");
+//                                        sent.setText("Play sent");
+//                                        pauseButton.setText("Pause");
+//                                    } else {
+//                                        countDown.cancel();
+//                                        paused = true;
+//                                        out.println("PAUSE");
+//                                        sent.setText("Pause sent");
+//                                        pauseButton.setText("Play");
+//                                    }
+//                                }
+//                            });
+//                        }
+//                    });
 
                     connected = true;
                     while (connected) {
-                        line = in.readLine().replaceAll("\\s", "");
+                        line = in.readLine();
 
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
+//                                if (gv.getPanel().isPaused()) {
+//                                    countDown.cancel();
+//                                    paused = true;
+//                                    out.println("PAUSE");
+//                                } else if (!gv.getPanel().isPaused()) {
+//                                    countDown = new MyCount(timeLeft, 1000);
+//                                    countDown.start();
+//                                    Log.d("newgame", "getpanel");
+//                                    paused = false;
+//                                    out.println("PLAY");
+//                                }
+
                                 if (line.equals("GAME END")) {
                                     connected = false;
                                 } else if (line.equals("PAUSE")) {
@@ -471,36 +488,26 @@ public class NewGameActivity extends Activity {
                                 } else if (line.equals("PLAY")) {
                                     countDown = new MyCount(timeLeft, 1000);
                                     countDown.start();
+                                    Log.d("newgame", "PLAY");
                                     sent.setText("Play received");
                                     pauseButton.setEnabled(true);
                                     pauseButton.setText("Pause");
                                     paused = false;
-                                } else if (line.startsWith("mac")) {
-                                    opponent.setMacAddress(line.substring(4));
-                                    out.println("mac " + mac);
                                 } else if (line.startsWith("{")) {
                                     try {
                                         opponent.updatePlayer(line);
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-
-                                    try {
                                         countDownText.setText(opponent.toJSONString());
                                     } catch (JSONException e) {
                                         e.printStackTrace();
                                     }
                                 } else {
-                                    if (line.length() > 9 &&
-                                            line.substring(0, 9).equals("Connected")) {
-                                        sent.setText(line);
-                                        countDown.start();
-                                        setContentView(new GameView(getApplicationContext(),
-                                                myPlayer, opponent, 3));
-                                    } else {
-                                        countDownText.setText(line);
-                                    }
-
+                                    countDown.start();
+                                    setContentView(gv);
+                                    String[] comms = line.split("\\s");
+                                    opponent.setIp(comms[1]);
+                                    opponent.setMacAddress(comms[0]);
+                                    out.print("mac " + myPlayer.getMacAddress());
+                                    Log.d("newgame", "connection");
                                 }
                             }
                         });
@@ -508,7 +515,7 @@ public class NewGameActivity extends Activity {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            out.println("GAME END");
+                            out.print("GAME END");
                         }
                     });
 

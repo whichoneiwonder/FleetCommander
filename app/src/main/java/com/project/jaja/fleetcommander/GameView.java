@@ -75,7 +75,7 @@ public class GameView extends SurfaceView {
     public GameView(Context context, Player me, Player enemy, int numShipsInGame){
         super(context);
 
-        //Creates the tread
+        //Creates the thread
         thread = new GameLoopThread(this);
 
         //Players
@@ -156,6 +156,16 @@ public class GameView extends SurfaceView {
 
 
     }
+
+    /**
+     * Returns this panel
+     * This assists us in checking if the game is paused or playing in the NewGameActivity
+     * @return panel this Game panel
+     */
+    public Panel getPanel() {
+        return panel;
+    }
+
 
     /**
      *  Method call that populates the ArrayList.
