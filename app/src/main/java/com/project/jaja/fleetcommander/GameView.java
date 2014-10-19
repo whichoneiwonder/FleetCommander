@@ -35,10 +35,6 @@ public class GameView extends SurfaceView {
     //Thread that holds the game loop logic
     private GameLoopThread thread;
 
-    //List of all the instantiated ships
-    private ArrayList<Ship> ships;
-    private ArrayList<Ship> enemyShips;
-
     //Integer value holding the number of ships created
     private int numShipsCreated;
 
@@ -81,7 +77,6 @@ public class GameView extends SurfaceView {
         screenheight = size.y;
         screenwidth = size.x;
         Log.i("Dimensions", "Screenheight: " + screenheight + "\nScreen Width: " + screenwidth);
-        ships = new ArrayList<Ship>();
         numShipsCreated = 0;
         surfaceHolder = getHolder();
         surfaceHolder.addCallback(new SurfaceHolder.Callback() {
@@ -150,11 +145,11 @@ public class GameView extends SurfaceView {
         }
 
         if(me.getShipColour().equals("blue")){
-            ships = blue_ships;
-            enemyShips = red_ships;
+            me.setFleet(blue_ships);
+            enemy.setFleet(red_ships);
         } else{
-            ships = red_ships;
-            enemyShips = blue_ships;
+            me.setFleet(red_ships);
+            enemy.setFleet(blue_ships);
         }
     }
 
@@ -186,26 +181,22 @@ public class GameView extends SurfaceView {
 
         //Abstract to a function and potentially in the wrong place (should be in ShipSprite)
         //If the ship bounces of an edge it changes direction
-        for(Ship ship : ships){
+        for(Ship myShip : me.getFleet()){
             //gets the image needed to be displayed based on the direction
-            int resourceID = ship.getDirectionID(ship.getDirection());
+            int resourceID = myShip.getDirectionID(myShip.getDirection());
             //sets the image of the ship to the specified image
-            ship.setMap(BitmapFactory.decodeResource(getResources(), resourceID));
+            myShip.setMap(BitmapFactory.decodeResource(getResources(), resourceID));
 
             //draws the ship onto the canvas
-            ship.onDraw(canvas);
+            myShip.onDraw(canvas);
 
             //This will eventually be looping through all GameObjects, not just ships
-            for(GameObject secondShip: enemyShips){
-                //We don't want to check if a ship is colliding with itself
+            for(Ship enemyShip: enemy.getFleet()){
 
-                Log.d("Collision detection", "The second ship loop is being reached");
-
-                if(secondShip.stillAlive()) {
-                    Log.d("Collision detection", "This method is being called");
-                    ship.detectCollision(secondShip);
+                if(enemyShip.stillAlive()) {
+                    myShip.detectCollision(enemyShip);
                 } else{
-                    enemyShips.remove(secondShip);
+                    enemy.removeShipFromFleet(enemyShip);
                 }
             }
         }
@@ -245,7 +236,7 @@ public class GameView extends SurfaceView {
             int distance;
 
             //find the closest ship to where you've clicked
-            for(Ship ship:ships) {
+            for(Ship ship: me.getFleet()) {
                 distance = Math.abs(ship.getXPosition()+ship.getMap().getWidth()/2
                             - (int) event.getX()) +
                         Math.abs(ship.getYPosition() + ship.getMap().getHeight()/2
@@ -267,8 +258,6 @@ public class GameView extends SurfaceView {
                 //indicate selection
                 shipReceivingInput.setShipSelect(true);
             }
-
-
 
             return true;
         }
