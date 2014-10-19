@@ -247,7 +247,11 @@ public class GameView extends SurfaceView {
 
         //Abstract to a function and potentially in the wrong place (should be in ShipSprite)
         //If the ship bounces of an edge it changes direction
-        for(Ship myShip : me.getFleet()){
+        ArrayList<Ship> myShips = me.getFleet();
+        for(int i = 0; i < myShips.size(); i++){
+
+            Ship myShip = myShips.get(i);
+
             //gets the image needed to be displayed based on the direction
             int resourceID = myShip.getDirectionID(myShip.getDirection());
             //sets the image of the ship to the specified image
@@ -257,7 +261,10 @@ public class GameView extends SurfaceView {
             myShip.onDraw(canvas);
 
             //This will eventually be looping through all GameObjects, not just ships
-            for(Ship enemyShip: enemy.getFleet()){
+            ArrayList<Ship> enemyShips = enemy.getFleet();
+            for(int j = 0; j < enemyShips.size(); j++) {
+
+                Ship enemyShip = enemyShips.get(j);
 
                 if(enemyShip.stillAlive()) {
                     myShip.detectCollision(enemyShip, v);
