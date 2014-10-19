@@ -5,10 +5,13 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 
+import java.util.ArrayList;
+import java.util.Observable;
+
 /**
  * Created by avnishjain on 15/10/14.
  */
-public class Panel {
+public class Panel implements com.project.jaja.fleetcommander.Observable {
 
         private GameView gameView;
         private Paint paint;
@@ -30,6 +33,8 @@ public class Panel {
         private int bottomY;
 
         private boolean isPaused;
+
+        private ArrayList<Observer> observers = new ArrayList<Observer>();
 
         public Panel(GameView gameView){
             this.gameView = gameView;
@@ -102,7 +107,19 @@ public class Panel {
 
         public boolean isPaused(){return isPaused;}
 
+        public void addObserver(Observer o) {
+            observers.add(o);
+        }
 
+        public void removeObserver(Observer o) {
+            observers.remove(o);
+        }
+
+        public void notifyObservers() {
+            for(Observer o: observers){
+                o.update(this);
+            }
+        }
 }
 
 

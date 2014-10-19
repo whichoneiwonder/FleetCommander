@@ -132,22 +132,38 @@ public class NewGameActivity extends Activity {
 //        messageField = (EditText) findViewById(R.id.message_field);
         countDown = new MyCount(timeLeft, 1000);
 
+
+        ServerThread st = null;
+        ClientThread ct = null;
+        Thread serverThread;
+        Thread clientThread;
+
         if (CLIENTIP.equals("")) {
             // Server Player always starts play on left of screen
             myPlayer = new Player(SERVERIP, mac, 0, 10, "blue");
             opponent = new Player(CLIENTIP, "",0, 10, "red");
 
-            Thread serverThread = new Thread(new ServerThread());
+            st = new ServerThread();
+            serverThread = new Thread(st);
             serverThread.start();
         } else {
             // Client Player always starts play on right of screen
             myPlayer = new Player(CLIENTIP, mac, 0, 10, "red");
             opponent = new Player(SERVERIP, "", 0, 10, "blue");
 
-            Thread clientThread = new Thread(new ClientThread());
+            ct = new ClientThread();
+            clientThread = new Thread(ct);
             clientThread.start();
         }
+
         gv = new GameView(getApplicationContext(), myPlayer, opponent, 3);
+        Panel p = gv.getPanel();
+
+        if (CLIENTIP.equals("")) {
+            p.addObserver(st);
+        } else {
+            p.addObserver(ct);
+        }
     }
 
     @Override
@@ -221,7 +237,23 @@ public class NewGameActivity extends Activity {
     /* Server Thread - operates much like the client, however it opens the server socket and
      * waits for connections from a client
      */
-    public class ServerThread implements Runnable {
+    public class ServerThread implements Runnable, Observer {
+        public void update(Object o) {
+            if(o instanceof Panel) {
+                Panel panel = (Panel)o;
+                if (panel.isPaused()) {
+                    countDown.cancel();
+                    paused = true;
+                    out.println("PAUSE");
+                } else if (panel.isPaused()) {
+                    countDown = new MyCount(timeLeft, 1000);
+                    countDown.start();
+                    paused = false;
+                    out.println("PLAY");
+                }
+            }
+        }
+
         public void run() {
             try {
                 if (SERVERIP != null) {
@@ -240,7 +272,6 @@ public class NewGameActivity extends Activity {
                         Socket client = serverSocket.accept();
                         CLIENTIP = client.getInetAddress().getHostAddress();
                         opponent.setIp(CLIENTIP);
-
 
                         try {
                             /* The main loop where connections happen, only broken if opponent
@@ -261,46 +292,6 @@ public class NewGameActivity extends Activity {
                                 }
                             });
 
-                            // Sends string across to another phone
-                            // Duplication is necessary
-//                            sendButton.setOnClickListener(new View.OnClickListener() {
-//                                public void onClick(View v) {
-//                                    handler.post(new Runnable() {
-//                                        @Override
-//                                        public void run() {
-//                                            out.println(messageField.getText().toString());
-//                                            messageField.setText("");
-//                                        }
-//                                    });
-//                                }
-//                            });
-
-                            // Enables pause on other phone
-                            // Duplication is necessary
-//                            pauseButton.setOnClickListener(new View.OnClickListener() {
-//                                public void onClick(View v) {
-//                                    handler.post(new Runnable() {
-//                                        @Override
-//                                        public void run() {
-//                                            if (paused) {
-//                                                countDown = new MyCount(timeLeft, 1000);
-//                                                countDown.start();
-//                                                paused = false;
-//                                                out.println("PLAY");
-//                                                sent.setText("Play sent");
-//                                                pauseButton.setText("Pause");
-//                                            } else {
-//                                                countDown.cancel();
-//                                                paused = true;
-//                                                out.println("PAUSE");
-//                                                sent.setText("Pause sent");
-//                                                pauseButton.setText("Play");
-//                                            }
-//                                        }
-//                                    });
-//                                }
-//                            });
-
                             connected = true;
                             while (connected) {
 
@@ -309,16 +300,6 @@ public class NewGameActivity extends Activity {
                                 handler.post(new Runnable() {
                                     @Override
                                     public void run() {
-//                                        if (gv.getPanel().isPaused()) {
-//                                            countDown.cancel();
-//                                            paused = true;
-//                                            out.println("PAUSE");
-//                                        } else if (!gv.getPanel().isPaused()) {
-//                                            countDown = new MyCount(timeLeft, 1000);
-//                                            countDown.start();
-//                                            paused = false;
-//                                            out.println("PLAY");
-//                                        }
                                         if (line.equals("GAME END")) {
                                             connected = false;
                                         }  else if (line.equals("PAUSE")) {
@@ -406,7 +387,22 @@ public class NewGameActivity extends Activity {
     /* Client thread looks for open server sockets on the given IP address and port
      *
      */
-    public class ClientThread implements Runnable {
+    public class ClientThread implements Runnable, Observer {
+        public void update(Object o) {
+            if(o instanceof Panel) {
+                Panel panel = (Panel)o;
+                if (panel.isPaused()) {
+                    countDown.cancel();
+                    paused = true;
+                    out.println("PAUSE");
+                } else if (panel.isPaused()) {
+                    countDown = new MyCount(timeLeft, 1000);
+                    countDown.start();
+                    paused = false;
+                    out.println("PLAY");
+                }
+            }
+        }
 
         public void run() {
             try {
@@ -418,46 +414,6 @@ public class NewGameActivity extends Activity {
                             new InputStreamReader(socket.getInputStream()));
                     out = new PrintWriter(socket.getOutputStream(), true);
 
-                    // Sends string across to another phone
-                    // Duplication is necessary
-//                    sendButton.setOnClickListener(new View.OnClickListener() {
-//                        public void onClick(View v) {
-//                            handler.post(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    out.println(messageField.getText().toString());
-//                                    messageField.setText("");
-//                                }
-//                            });
-//                        }
-//                    });
-
-                    // Enables pause on other phone
-                    // Duplication is necessary
-//                    pauseButton.setOnClickListener(new View.OnClickListener() {
-//                        public void onClick(View v) {
-//                            handler.post(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    if (paused) {
-//                                        countDown = new MyCount(timeLeft, 1000);
-//                                        countDown.start();
-//                                        paused = false;
-//                                        out.println("PLAY");
-//                                        sent.setText("Play sent");
-//                                        pauseButton.setText("Pause");
-//                                    } else {
-//                                        countDown.cancel();
-//                                        paused = true;
-//                                        out.println("PAUSE");
-//                                        sent.setText("Pause sent");
-//                                        pauseButton.setText("Play");
-//                                    }
-//                                }
-//                            });
-//                        }
-//                    });
-
                     connected = true;
                     while (connected) {
                         line = in.readLine();
@@ -465,18 +421,6 @@ public class NewGameActivity extends Activity {
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-//                                if (gv.getPanel().isPaused()) {
-//                                    countDown.cancel();
-//                                    paused = true;
-//                                    out.println("PAUSE");
-//                                } else if (!gv.getPanel().isPaused()) {
-//                                    countDown = new MyCount(timeLeft, 1000);
-//                                    countDown.start();
-//                                    Log.d("newgame", "getpanel");
-//                                    paused = false;
-//                                    out.println("PLAY");
-//                                }
-
                                 if (line.equals("GAME END")) {
                                     connected = false;
                                 } else if (line.equals("PAUSE")) {
