@@ -357,13 +357,13 @@ public class Ship extends GameObject implements Movable, Firing {
             //Ship is facing left or right, thus we want large y small x
             if(yDistance < 10 && xDistance < 3){
                 Log.d("Shooting", "Something is being shot");
-                shoot(target);
+                shoot(target, v);
             }
         } else if(this.direction == 2 || this.direction == 6){
             //Ship is facing up or down, thus we want large x and small y
             if(xDistance < 10 && yDistance < 3){
                 Log.d("Shooting", "Something is being shot");
-                shoot(target);
+                shoot(target, v);
             }
 
         }
