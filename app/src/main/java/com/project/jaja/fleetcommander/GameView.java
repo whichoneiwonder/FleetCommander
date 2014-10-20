@@ -268,6 +268,7 @@ public class GameView extends SurfaceView {
          canvas.drawColor(Color.rgb(0,153,204));
 
         panel.onDraw(canvas);
+        panel.onDraw(canvas);
         renderPauseButton(canvas);
 
         //Abstract to a function and potentially in the wrong place (should be in ShipSprite)

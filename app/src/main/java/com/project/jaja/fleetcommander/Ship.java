@@ -158,7 +158,6 @@ public class Ship extends GameObject implements Movable, Firing {
     }
 
     /**Update method called each frame
-     * TODO - move this update method into the ship interface/classes
      */
     @Override
     public void update(){

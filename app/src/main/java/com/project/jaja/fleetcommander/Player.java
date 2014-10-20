@@ -97,9 +97,17 @@ public class Player {
         this.fleet.remove(deadShip);
     }
 
+    /**
+     * A method that takes in the JSON sent by the other player and then updates
+     * the player's game board with the data
+     * @param jsonData the JSON sent over from the other player
+     * @throws JSONException
+     */
     public void updatePlayer(String jsonData) throws JSONException {
         JSONObject data = new JSONObject(jsonData);
 
+        //If the max steps is not consistent between players then the game
+        // has been compromised
         if (data.getInt("maxSteps") != maxSteps) {
             Log.d("playercheck", "maxSteps changed, system exiting...");
             System.exit(1);
@@ -134,16 +142,11 @@ public class Player {
 
         for (int i = 0; i < maxShips; i++) {
             JSONObject shipJSON = ships.getJSONObject(i);
-            JSONObject location = shipJSON.getJSONObject("loc");
             JSONObject path = shipJSON.getJSONObject("path");
 
+            //Retrieving the ship in question from the existing fleet
             Ship ship = fleet.get(i);
 
-            //Removing this for now, seeing if we can get the ship to follow the path
-            //that it is passed
-            //Location loc = new Location(location.getInt("x"), location.getInt("y"));
-            //ship.setLoc(loc);
-            ship.setDir(shipJSON.getInt("dir"));
             ship.setHealth(shipJSON.getInt("health"));
 
             //Adding the x and y coordinates from the json path arrays to the ships
@@ -157,27 +160,24 @@ public class Player {
                 ship.addyCoord(yCoords.getInt(j));
             }
 
-
-            JSONArray directionsJSON = shipJSON.getJSONArray("dir_list");
-            ArrayList<Integer> directionList = new ArrayList<Integer>();
-
-            if (directionsJSON != null) {
-                int len = directionsJSON.length();
-
-                for (int j = 0; i < len; i++){
-                    directionList.add(directionsJSON.getInt(j));
-                }
-            }
-
-            ship.setDirectionList(directionList);
         }
     }
 
+    /*
+        Converts all the necessary data about the player into JSON so that it may
+        be sent to their opponent for processing
+     */
     public String toJSONString() throws JSONException {
         JSONObject data = new JSONObject();
+        //The player's IP address
         data.put("ip", ip);
+        //The player's MAC address
         data.put("mac", macAddress);
+        //Which turn number the player is on, this is used to ensure that the correct data
+        //has been recieved
         data.put("turn", turn);
+        //The number of steps that the player is allowed to make (ie how far their
+        //ship can move in a single turn)
         data.put("maxSteps", maxSteps);
 
         JSONArray ships = new JSONArray();
@@ -185,26 +185,12 @@ public class Player {
             JSONObject shipJSON = new JSONObject();
             shipJSON.put("health", ship.getHealth());
 
-            Location loc = ship.getLoc();
-            JSONObject locJSON = new JSONObject();
-            locJSON.put("x", loc.getX());
-            locJSON.put("y", loc.getY());
-            shipJSON.put("loc", locJSON);
-
             //This allows us to have reference to the path that
             //the user has drawn for that ship
             JSONObject pathJSON = new JSONObject();
             pathJSON.put("xCoordsPath", ship.getxCoords());
             pathJSON.put("yCoordsPath", ship.getyCoords());
             shipJSON.put("path", pathJSON);
-
-            shipJSON.put("dir", ship.getDir());
-            ArrayList<Integer> dirList = ship.getDirectionList();
-            JSONArray dirJSON = new JSONArray();
-            for (int one_dir: dirList) {
-                dirJSON.put(one_dir);
-            }
-            shipJSON.put("dir_list", dirJSON);
             ships.put(shipJSON);
         }
 
@@ -215,5 +201,13 @@ public class Player {
 
     public String getShipColour(){
         return shipColour;
+    }
+
+    /*
+    A simple method used to determine whether or not the player still has any ships left
+    in their fleet. If they do, then they may continue playing. If not, then they lose
+     */
+    public boolean stillHasShips(){
+        return this.getFleet().size() > 0;
     }
 }
