@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 
 import java.util.ArrayList;
-import java.util.Observable;
 
 /**
  * Created by avnishjain on 15/10/14.
@@ -103,7 +102,10 @@ public class Panel implements com.project.jaja.fleetcommander.Observable {
 
         public void setPause(boolean pause) {isPaused = pause;}
 
-        public void clickPause(){ setPause(!isPaused);}
+        public void clickPause() {
+            notifyObservers();
+            setPause(!isPaused);
+        }
 
         public boolean isPaused(){return isPaused;}
 
