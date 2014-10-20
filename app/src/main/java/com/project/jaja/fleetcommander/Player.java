@@ -216,4 +216,12 @@ public class Player {
     public String getShipColour(){
         return shipColour;
     }
+
+    /*
+    A simple method used to determine whether or not the player still has any ships left
+    in their fleet. If they do, then they may continue playing. If not, then they lose
+     */
+    public boolean stillHasShips(){
+        return this.getFleet().size() > 0;
+    }
 }
