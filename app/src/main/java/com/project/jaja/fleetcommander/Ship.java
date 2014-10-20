@@ -9,13 +9,10 @@ import android.view.MotionEvent;
 
 import java.util.ArrayList;
 import java.util.Random;
-import android.util.Log;
 /**
  * Created by avnishjain and jmcma on 19/09/14.
  */
 public class Ship extends GameObject implements Movable, Firing {
-
-
 
     private ArrayList<Integer> xCoords;
     private ArrayList<Integer> yCoords;
@@ -35,6 +32,8 @@ public class Ship extends GameObject implements Movable, Firing {
 
     private Panel panel;
 
+    private String color;
+
     //Integer direction values and constants
     private int direction;
     public final static int RIGHT = 0;
@@ -53,7 +52,7 @@ public class Ship extends GameObject implements Movable, Firing {
      * @param xPosition - position in x
      * @param yPosition - position in y
      */
-    public Ship(GameView gameView, Bitmap map, int xPosition, int yPosition, int health, Panel panel){
+    public Ship(GameView gameView, Bitmap map, int xPosition, int yPosition, int health, String color, Panel panel){
         this.gameView = gameView;
         this.map = map;
         path = new Path();
@@ -80,6 +79,8 @@ public class Ship extends GameObject implements Movable, Firing {
         this.yCoords = new ArrayList<Integer> ();
 
         this.health = health;
+
+        this.color = color;
 
 
     }
@@ -119,11 +120,20 @@ public class Ship extends GameObject implements Movable, Firing {
             return R.drawable.select_ship_left;
 
         }*/
-        if(shipSelect == false){
-            return R.drawable.ship_right;
 
+        if(this.color.equals("Blue")) {
+            if (shipSelect == false) {
+                return R.drawable.ship_right;
+
+            }
+            return R.drawable.select_ship_right;
         }
-        return R.drawable.select_ship_right;
+        else{
+            if(shipSelect == false){
+                return R.drawable.enemy_ship_right;
+            }
+            return R.drawable.select_ship_right;
+        }
     }
 
     public int getDirection(){
@@ -281,7 +291,12 @@ public class Ship extends GameObject implements Movable, Firing {
     public void onDraw(Canvas canvas) {
         // paint to color ship's path with
         Paint paint = new Paint();
-        paint.setColor(Color.WHITE);
+        if(color.equals("Blue")) {
+            paint.setColor(Color.BLUE);
+        }
+        else{
+            paint.setColor(Color.RED);
+        }
         paint.setStrokeWidth(3);
         paint.setStyle(Paint.Style.STROKE );
 
@@ -436,5 +451,13 @@ public class Ship extends GameObject implements Movable, Firing {
 
     public void setPath(Path path) {
         this.path = path;
+    }
+
+    @Override
+    public String toString() {
+        return "Ship{" +
+                "xPosition=" + xPosition +
+                "yPosition=" + yPosition +
+                '}';
     }
 }
