@@ -100,6 +100,8 @@ public class NewGameActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        //We don't want the created window to have a title bar as games should be an immersive
+        //experience
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         setContentView(R.layout.activity_new_game);
@@ -114,9 +116,11 @@ public class NewGameActivity extends Activity {
         WifiInfo info = manager.getConnectionInfo();
         mac = info.getMacAddress();
 
+        //The text that is to be sent across the P2P network
         sent = (TextView) findViewById(R.id.sent);
         countDown = new MyCount(timeLeft, 1000);
 
+        //If the CLIENTIP is not set then the user is the server
         if (CLIENTIP.equals("")) {
             // Server Player always starts play on left of screen
             myPlayer = new Player(SERVERIP, mac, 0, 10, "blue");
@@ -135,6 +139,7 @@ public class NewGameActivity extends Activity {
             clientThread.start();
         }
 
+        //Once the threads have been started we need to instantiate the GameView and Panel
         gv = new GameView(getApplicationContext(), myPlayer, opponent, 3);
         p = gv.getPanel();
 
@@ -172,6 +177,7 @@ public class NewGameActivity extends Activity {
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Extending CountDownTimer to more easily pause and resume
+    //////////////////////////////////////////////////////////////////////////////////////////////
     public class MyCount extends CountDownTimer {
         public MyCount(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);

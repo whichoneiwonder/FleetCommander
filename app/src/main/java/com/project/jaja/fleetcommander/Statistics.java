@@ -42,10 +42,12 @@ public class Statistics {
             for (int i = 0; i < statsListJSON.length(); i++) {
                 JSONObject entry = statsListJSON.getJSONObject(i);
 
+                //Getting the necessary score information from the JSON data
                 int myScore = entry.getInt("myScore");
                 int opponentScore = entry.getInt("opponentScore");
                 String dateTime = entry.getString("dateTime");
 
+                //Converting the JSON information into a statistics object
                 Statistic stat = new Statistic(myScore, opponentScore, dateTime);
 
                 statsList.add(stat);
