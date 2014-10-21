@@ -60,10 +60,7 @@ public class NewGameActivity extends Activity {
     private MyCount countDown;
 
     // Countdown timer time variable
-    private long timeLeft = 30000;
-
-    // Indicates end of round
-    private boolean roundEnd = false;
+    private long timeLeft = 10000;
 
     // Player class associated with this instance
     private Player myPlayer;
@@ -86,6 +83,9 @@ public class NewGameActivity extends Activity {
     // The TextView which shows your IP that you are listening on when running a Serve Thread
     private TextView sent;
 
+    // This game's intent
+    private Intent intent;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,7 +95,7 @@ public class NewGameActivity extends Activity {
         setContentView(R.layout.activity_new_game);
 
         // Get data from previous View
-        Intent intent = getIntent();
+        intent = getIntent();
         SERVERIP = intent.getStringExtra("SERVERIP");
         CLIENTIP = intent.getStringExtra("CLIENTIP");
 
@@ -173,7 +173,6 @@ public class NewGameActivity extends Activity {
          */
         @Override
         public void onFinish() {
-            roundEnd = true;
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -195,6 +194,7 @@ public class NewGameActivity extends Activity {
      */
     public class ServerThread implements Runnable, Observer {
 
+        // Updates when the Panel has been touched
         public void update(Object o) {
             p = (Panel) o;
             if (!p.isPaused()) {
@@ -217,6 +217,26 @@ public class NewGameActivity extends Activity {
                 });
                 Log.d("Pause", "Play sent");
             }
+        }
+
+        // When the game has ended, send a result string
+        public void sendEndGame(String user) {
+            final String result = "GAME END" + user;
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    out.println(result);
+                }
+            });
+        }
+
+        /**
+         * Updates the stats json file and shows a toast message
+         * @param result Result of this game
+         */
+        public void endGame(String result) {
+            //Toast
+            // Stats
         }
 
         public void run() {
@@ -267,6 +287,13 @@ public class NewGameActivity extends Activity {
                                     @Override
                                     public void run() {
                                         if (line.startsWith("GAME END")) {
+                                            if (line.startsWith("GAME END me")) {
+                                                endGame("WON");
+                                            } else if (line.startsWith("GAME END you")) {
+                                                endGame("LOST");
+                                            } else {
+                                                endGame("DRAW");
+                                            }
                                             connected = false;
                                         } else if (line.startsWith("PAUSE")) {
                                             countDown.cancel();
@@ -288,17 +315,27 @@ public class NewGameActivity extends Activity {
                                                 e.printStackTrace();
                                             }
                                             Log.d("json", test);
+                                            // Ships move
+
+                                            // check alive
+                                            if (myPlayer.stillHasShips() &&
+                                                    opponent.stillHasShips()) {
+                                                timeLeft = 10000;
+                                                countDown = new MyCount(timeLeft, 1000);
+                                                countDown.start();
+
+                                            } else if (!myPlayer.stillHasShips()) {
+                                                sendEndGame("me");
+                                            } else if (!opponent.stillHasShips()) {
+                                                sendEndGame("you");
+                                            } else {
+                                                sendEndGame("draw");
+                                            }
                                         }
                                     }
                                 });
                             }
-
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    out.println("GAME END");
-                                }
-                            });
+                            // Go back to home
                             break;
                         } catch (Exception e) {
                             handler.post(new Runnable() {
@@ -319,6 +356,7 @@ public class NewGameActivity extends Activity {
                     });
                 }
             } catch (Exception e) {
+
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
