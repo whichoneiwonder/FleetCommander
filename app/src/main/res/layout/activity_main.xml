@@ -41,6 +41,14 @@
                 android:text="@string/p2p_button"
                 android:onClick="goToP2P" />
 
+            <Button android:id="@+id/test_button"
+                style="?metaButtonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/title_activity_test"
+                android:onClick="goToTestActivity" />
+
         </LinearLayout>
 
         <Button

@@ -23,6 +23,7 @@ public class GameObject{
     //The GameObjects current health (0 represents dead)
     public int health;
 
+    protected String color;
 
     //the bitmap image of the sprite itself:
     public Bitmap map;
@@ -259,6 +260,14 @@ public class GameObject{
     }
 
     public void kill(){
-        this.health = 0;
+        this.health = -1;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 }

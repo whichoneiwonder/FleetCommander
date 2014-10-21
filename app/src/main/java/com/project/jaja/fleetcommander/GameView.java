@@ -103,7 +103,7 @@ public class GameView extends SurfaceView {
 
         //Players
         this.me = me;
-        this.enemy = me;
+        this.enemy = enemy;
 
         //Number of ships to create
         this.numShipsInGame = numShipsInGame;
@@ -197,20 +197,21 @@ public class GameView extends SurfaceView {
      *  one place
      */
     protected void populateShips(){
-        ArrayList<Ship> blue_ships = new ArrayList<Ship>();
-        ArrayList<Ship> red_ships = new ArrayList<Ship>();
+
+        int startingBlueGridY = (int)(numYGridPoints*0.1);
+
+        int startingRedGridY =(int)(numYGridPoints*0.9);
 
         for(int i = 0; i < numShipsInGame; i++){
-            blue_ships.add(newShip(R.drawable.ship_right, playerXStartingGrid));
-            red_ships.add(newShip(R.drawable.enemy_ship_right, enemyXStartingGrid));
-        }
+            if(me.getShipColour().equals("blue")){
+                me.getFleet().add(newShip(R.drawable.ship_right, getScreenXFromGridX(2+2*i), getScreenYFromGridY(startingBlueGridY), "blue"));
+                enemy.getFleet().add(newShip(R.drawable.enemy_ship_right, getScreenXFromGridX(2+2*i), getScreenYFromGridY(startingRedGridY), "red"));
+            } else{
+                me.getFleet().add(newShip(R.drawable.enemy_ship_right, getScreenXFromGridX(2+2*i), getScreenYFromGridY(startingRedGridY), "red"));
+                enemy.getFleet().add(newShip(R.drawable.ship_right,getScreenXFromGridX(2+2*i), getScreenYFromGridY(startingBlueGridY), "blue"));
+            }
 
-        if(me.getShipColour().equals("blue")){
-            me.setFleet(blue_ships);
-            enemy.setFleet(red_ships);
-        } else{
-            me.setFleet(red_ships);
-            enemy.setFleet(blue_ships);
+
         }
     }
 
@@ -221,12 +222,17 @@ public class GameView extends SurfaceView {
      * @param startingX The starting x coordinate of the ship
      * @return newShip, the newly created ship
      */
-    protected Ship newShip(int drawable, int startingX){
+    protected Ship newShip(int drawable, int startingX, int startingY, String color){
         //sets the image of the ship to the one specified
         map = BitmapFactory.decodeResource(getResources(), drawable);
 
         //Creates the new ship at the specified location
+<<<<<<< HEAD
         Ship newShip = new Ship(this, map, 110 + numShipsCreated*10, 100, 100,panel);
+=======
+
+        Ship newShip = new Ship(this, map, startingX, startingY, 100, color, panel);
+>>>>>>> origin/correct_render_of_ship
         numShipsCreated++;
         return newShip;
     }
@@ -284,7 +290,9 @@ public class GameView extends SurfaceView {
      */
     protected void onDraw(Canvas canvas){
         //Sets the background to the RGB Value
-         canvas.drawColor(Color.rgb(0,153,204));
+        me.updatePlayerFleet();
+        enemy.updatePlayerFleet();
+        canvas.drawColor(Color.rgb(0,153,204));
 
         panel.onDraw(canvas);
         panel.onDraw(canvas);
@@ -292,35 +300,33 @@ public class GameView extends SurfaceView {
 
         //Abstract to a function and potentially in the wrong place (should be in ShipSprite)
         //If the ship bounces of an edge it changes direction
-        ArrayList<Ship> myShips = me.getFleet();
-        for(int i = 0; i < myShips.size(); i++){
+        ArrayList<GameObject> allShips = new ArrayList<GameObject>();
+        allShips.addAll(me.getFleet());
+        allShips.addAll(enemy.getFleet());
+        for(int i = 0; i < allShips.size(); i++){
 
-            Ship myShip = myShips.get(i);
+            Ship ship = (Ship) allShips.get(i);
 
             //gets the image needed to be displayed based on the direction
-            int resourceID = myShip.getDirectionID(myShip.getDirection());
+            int resourceID = ship.getDirectionID(ship.getDirection());
             //sets the image of the ship to the specified image
-            myShip.setMap(BitmapFactory.decodeResource(getResources(), resourceID));
-
+            ship.setMap(BitmapFactory.decodeResource(getResources(), resourceID));
             //draws the ship onto the canvas
-
-            //myShip.onDraw(canvas);
+            ship.onDraw(canvas);
             //Log.d("SHIP DRAWING", "MY SHIP IS BEING DRAWN");
 
             //This will eventually be looping through all GameObjects, not just ships
-            ArrayList<Ship> enemyShips = enemy.getFleet();
-            for(int j = 0; j < enemyShips.size(); j++) {
 
-                Ship enemyShip = enemyShips.get(j);
-                //enemyShip.onDraw(canvas);
-                //Log.d("SHIP DRAWING", "ENEMY SHIP IS BEING DRAWN");
-
-
-                if(enemyShip.stillAlive()) {
-                    myShip.detectCollision(enemyShip, v);
-                } else{
-//                    enemy.removeShipFromFleet(enemyShip);
+            for(int j = 0; j < allShips.size(); j++) {
+                Ship otherShip = null;
+                if(i != j) {
+                    otherShip = (Ship) allShips.get(j);
                 }
+
+                if (otherShip != null && otherShip.stillAlive()) {
+                    ship.detectCollision(otherShip, v);
+                }
+
             }
         }
     }
