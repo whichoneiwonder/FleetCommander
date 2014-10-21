@@ -298,14 +298,9 @@ public class GameView extends SurfaceView {
             Ship myShip = myShips.get(i);
 
             //gets the image needed to be displayed based on the direction
-            int resourceID = myShip.getDirectionID(myShip.getDirection());
+            int resourceID = myShip.getDirectionID();
             //sets the image of the ship to the specified image
             myShip.setMap(BitmapFactory.decodeResource(getResources(), resourceID));
-
-            //draws the ship onto the canvas
-
-            //myShip.onDraw(canvas);
-            //Log.d("SHIP DRAWING", "MY SHIP IS BEING DRAWN");
 
             //This will eventually be looping through all GameObjects, not just ships
             ArrayList<Ship> enemyShips = enemy.getFleet();

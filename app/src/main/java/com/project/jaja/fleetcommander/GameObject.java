@@ -130,19 +130,20 @@ public class GameObject{
                         //The ship with the small x coordinate will be to the left of the other ship
                         //and thus will be the one rear-ending the other ship.
 
-                        //Both ships are facing up, object with smaller y does damage
-                        case 0:
-                            if(yPosition < enemyY){
-                                testObject.kill();
-                            } else{
-                                this.kill();
-                            }
+
                         //Both ships are facing right, smaller x does damage
-                        case 1:
+                        case 0:
                             if(xPosition < enemyX){
                                 testObject.kill();
                             } else{
                                 this.kill();
+                            }
+                        //Both ships are facing down right, ship with the larger y
+                        case 1:
+                            if(yPosition < enemyY){
+                                this.kill();
+                            } else{
+                                testObject.kill();
                             }
                         //Both ships are facing down, larger y does damage
                         case 2:
@@ -151,12 +152,40 @@ public class GameObject{
                             } else{
                                 testObject.kill();
                             }
-                        //Both ships are facing right, larger x does damage
+                        //Both ships facing down right, larger y does damage
                         case 3:
+                            if(yPosition < enemyY){
+                                this.kill();
+                            } else{
+                                testObject.kill();
+                            }
+                        //Both ships are facing left, larger x does damage
+                        case 4:
                             if(xPosition < enemyX){
                                 this.kill();
                             } else {
                                 testObject.kill();
+                            }
+                        //Both ships are facing up, ship with smaller y does damage
+                        case 5:
+                            if(yPosition < enemyY){
+                                testObject.kill();
+                            } else{
+                                this.kill();
+                            }
+                        //Both ships are facing up, object with smaller y does damage
+                        case 6:
+                            if(yPosition < enemyY){
+                                testObject.kill();
+                            } else{
+                                this.kill();
+                            }
+                        //Both ships are facing up right, smaller y does damage
+                        case 7:
+                            if(yPosition < enemyY){
+                                testObject.kill();
+                            } else{
+                                this.kill();
                             }
                     }
                 }
@@ -167,17 +196,16 @@ public class GameObject{
                 //directions are different.
                 else{
                     switch(playerDirection){
-                        //Player is facing up, thus if the enemy y is greater than
-                        //the player y we know that the player is t-boning the enemy
+                        //Player is facing right, same as left
                         case 0:
                             if(yPosition < enemyY){
                                 testObject.kill();
                             } else{
                                 this.kill();
                             }
-                        //Player is facing left, we can just reverse the condition above
+                        //Player is facing down right, if the enemy has a smaller y or a larger x
                         case 1:
-                            if(yPosition < enemyY){
+                            if(yPosition > enemyY || xPosition < enemyX){
                                 testObject.kill();
                             } else{
                                 this.kill();
@@ -190,9 +218,38 @@ public class GameObject{
                             } else{
                                 testObject.kill();
                             }
-                        //Player is facing right, same as left
+                        //Player is facing down-left, player with the smaller y or smaller x
                         case 3:
+                            if(yPosition > enemyY || xPosition > enemyX){
+                                testObject.kill();
+                            } else{
+                                this.kill();
+                            }
+                        //Player is facing left, larger y
+                        case 4:
                             if(yPosition < enemyY){
+                                testObject.kill();
+                            } else{
+                                this.kill();
+                            }
+                        //Player is facing up left, smaller x or larger y
+                        case 5:
+                            if(xPosition > enemyX || yPosition < enemyY){
+                                testObject.kill();
+                            } else{
+                                this.kill();
+                            }
+                        //Player is facing up, thus if the enemy y is greater than
+                        //the player y we know that the player is t-boning the enemy
+                        case 6:
+                            if(yPosition < enemyY){
+                                testObject.kill();
+                            } else{
+                                this.kill();
+                            }
+                        //Player is facing up right, larger x or larger y takes damage
+                        case 7:
+                            if(yPosition < enemyY || xPosition < enemyX){
                                 testObject.kill();
                             } else{
                                 this.kill();
@@ -200,8 +257,6 @@ public class GameObject{
                     }
 
                 }
-
-
 
             }
             return true;
