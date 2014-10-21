@@ -14,6 +14,7 @@ public class GameObject{
     private int dir;
     public int health;
     private ArrayList<Integer> directionList;
+    protected String color;
 
     //the bitmap image of the sprite itself:
     public Bitmap map;
@@ -76,9 +77,9 @@ public class GameObject{
 
         if(gameView.getMappedScreenX(enemyX) == gameView.getMappedScreenX(xPosition) &&
             gameView.getMappedScreenY(enemyY) == gameView.getMappedScreenY(yPosition) ){//Damage dealing logic
-            Log.d("Collision detection","Two Ships are colliding");
+            Log.d("Collision detection","Two Ships are colliding" + "enemy " + testObject.getColor() + " myShip " + this.getColor());
             v.vibrate(2000);
-            //We deal different ammounts of damage based on what type of collision it is
+            //We deal different amounts of damage based on what type of collision it is
             if(testObject instanceof Ship){
                 int enemyDirection = ((Ship) testObject).getDirection();
                 int playerDirection = ((Ship) this).getDirection();
@@ -217,6 +218,14 @@ public class GameObject{
     }
 
     public void kill(){
-        this.health = 0;
+        this.health = -1;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 }

@@ -98,6 +98,15 @@ public class Player {
         this.fleet.remove(deadShip);
     }
 
+    public void updatePlayerFleet(){
+        for(int i = 0 ; i < getFleet().size(); i++){
+            Log.d("Ship Position", "Fleet Size: " + getFleet().size() + " Ship X " + i + " : " + getFleet().get(i).getXPosition() + " Ship Y "  + i + " : " + getFleet().get(i).getYPosition());
+            /*if(getFleet().get(i).getHealth() <= 0){
+                //getFleet().remove(i);
+                i--;
+            }*/
+        }
+    }
     /**
      * A method that takes in the JSON sent by the other player and then updates
      * the player's game board with the data
@@ -105,6 +114,7 @@ public class Player {
      * @throws JSONException
      */
     public void updatePlayer(String jsonData) throws JSONException {
+
         JSONObject data = new JSONObject(jsonData);
 
         //If the max steps is not consistent between players then the game

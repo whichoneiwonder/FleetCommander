@@ -189,19 +189,17 @@ public class GameView extends SurfaceView {
      */
     protected void populateShips(){
 
-        Ship dummy = newShip(R.drawable.enemy_ship_right, 0, 0, "Red");
-        int startingX = screenwidth /7;
-        int blueStartingY = panel.getHeight() + 20;
-        int redStartingY = screenheight - 20;
-        int spaceBetweenShips = dummy.getMap().getWidth() + 20;
+        int startingBlueGridY = (int)(numYGridPoints*0.1);
+
+        int startingRedGridY =(int)(numYGridPoints*0.9);
 
         for(int i = 0; i < numShipsInGame; i++){
             if(me.getShipColour().equals("blue")){
-                me.getFleet().add(newShip(R.drawable.ship_right, startingX + i * spaceBetweenShips, blueStartingY, "Blue"));
-                enemy.getFleet().add(newShip(R.drawable.enemy_ship_right, startingX + i* spaceBetweenShips, redStartingY, "Red"));
+                me.getFleet().add(newShip(R.drawable.ship_right, getScreenXFromGridX(2+2*i), getScreenYFromGridY(startingBlueGridY), "blue"));
+                enemy.getFleet().add(newShip(R.drawable.enemy_ship_right, getScreenXFromGridX(2+2*i), getScreenYFromGridY(startingRedGridY), "red"));
             } else{
-                me.getFleet().add(newShip(R.drawable.enemy_ship_right, startingX + i* spaceBetweenShips, redStartingY, "Red"));
-                enemy.getFleet().add(newShip(R.drawable.ship_right, startingX + i * spaceBetweenShips, blueStartingY, "Blue"));
+                me.getFleet().add(newShip(R.drawable.enemy_ship_right, getScreenXFromGridX(2+2*i), getScreenYFromGridY(startingRedGridY), "red"));
+                enemy.getFleet().add(newShip(R.drawable.ship_right,getScreenXFromGridX(2+2*i), getScreenYFromGridY(startingBlueGridY), "blue"));
             }
 
         }
@@ -267,7 +265,9 @@ public class GameView extends SurfaceView {
      */
     protected void onDraw(Canvas canvas){
         //Sets the background to the RGB Value
-         canvas.drawColor(Color.rgb(0,153,204));
+        me.updatePlayerFleet();
+        enemy.updatePlayerFleet();
+        canvas.drawColor(Color.rgb(0,153,204));
 
         panel.onDraw(canvas);
         panel.onDraw(canvas);
@@ -276,6 +276,8 @@ public class GameView extends SurfaceView {
         //Abstract to a function and potentially in the wrong place (should be in ShipSprite)
         //If the ship bounces of an edge it changes direction
         ArrayList<GameObject> allShips = new ArrayList<GameObject>();
+        allShips.addAll(me.getFleet());
+        allShips.addAll(enemy.getFleet());
         for(int i = 0; i < allShips.size(); i++){
 
             Ship ship = (Ship) allShips.get(i);
@@ -289,20 +291,18 @@ public class GameView extends SurfaceView {
             //Log.d("SHIP DRAWING", "MY SHIP IS BEING DRAWN");
 
             //This will eventually be looping through all GameObjects, not just ships
-            /*ArrayList<Ship> enemyShips = enemy.getFleet();
-            for(int j = 0; j < enemyShips.size(); j++) {
 
-                Ship enemyShip = enemyShips.get(j);
-                //enemyShip.onDraw(canvas);
-                //Log.d("SHIP DRAWING", "ENEMY SHIP IS BEING DRAWN");
-
-
-                if(enemyShip.stillAlive()) {
-                    myShip.detectCollision(enemyShip, v);
-                } else{
-//                    enemy.removeShipFromFleet(enemyShip);
+            for(int j = 0; j < allShips.size(); j++) {
+                Ship otherShip = null;
+                if(i != j) {
+                    otherShip = (Ship) allShips.get(j);
                 }
-            }*/
+
+                if (otherShip != null && otherShip.stillAlive()) {
+                    ship.detectCollision(otherShip, v);
+                }
+
+            }
         }
     }
 

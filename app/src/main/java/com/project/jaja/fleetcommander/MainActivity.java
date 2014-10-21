@@ -77,4 +77,9 @@ public class MainActivity extends Activity {
         Intent intent = new Intent(getApplicationContext(), StatisticsActivity.class);
         startActivity(intent);
     }
+
+    public void goToTestActivity(View view) {
+        Intent intent = new Intent(getApplicationContext(), TestActivity.class);
+        startActivity(intent);
+    }
 }

@@ -46,7 +46,6 @@ public class Ship extends GameObject implements Movable, Firing {
     public final static int UP = 6;
     public final static int UPRIGHT = 7;
 
-    private String color;
 
     /**ShipSprite Constructor for specifying all but speed
      *
@@ -122,7 +121,7 @@ public class Ship extends GameObject implements Movable, Firing {
             return R.drawable.select_ship_left;
 
         }*/
-        if (color.equals("Blue")) {
+        if (color.equals("blue")) {
             if (shipSelect == false) {
                 return R.drawable.ship_right;
 
@@ -174,7 +173,6 @@ public class Ship extends GameObject implements Movable, Firing {
     public void update(){
         int centreX = xPosition + map.getWidth()/2;
         int centreY = yPosition + map.getHeight()/2;
-        checkEdges();
         // move the ship by increments of its speed
         // amd update path to draw
         if(xCoords.size() > 0) {
@@ -182,6 +180,7 @@ public class Ship extends GameObject implements Movable, Firing {
             path = new Path();
             path.moveTo(xPosition + (map.getWidth() / 2),
                     yPosition + (map.getHeight() / 2));
+
             //add a line to each waypoint
             for ( int i = 0; i< xCoords.size(); i++){
                 path.lineTo(xCoords.get(i), yCoords.get(i));
@@ -289,7 +288,7 @@ public class Ship extends GameObject implements Movable, Firing {
     public void onDraw(Canvas canvas) {
         // paint to color ship's path with
         Paint paint = new Paint();
-        if(color.equals("Blue")) {
+        if(color.equals("blue")) {
             paint.setColor(Color.BLUE);
         }
         else{
