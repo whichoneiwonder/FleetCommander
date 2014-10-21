@@ -11,19 +11,19 @@ import java.util.ArrayList;
 import java.util.Random;
 import android.util.Log;
 /**
+ * A class representing the ships that are actually drawn in game
  * Created by avnishjain and jmcma on 19/09/14.
  */
 public class Ship extends GameObject implements Movable, Firing {
 
 
-
+    //These two arraylists keep track of the x and y coordinates of the player drawn
+    //path for the ship
     private ArrayList<Integer> xCoords;
     private ArrayList<Integer> yCoords;
 
     //List of available speeds
     private int [] speeds = {-1,0,1};
-    //Randomizer for the speed (will not be used later on)
-    private Random random;
 
     //boolean whether or not the ship is selected
     private boolean shipSelect;
@@ -31,8 +31,10 @@ public class Ship extends GameObject implements Movable, Firing {
     //offset for border cases (not currently used)
     public final static int pixelOffset = 5;
 
+    //The path that the ship follows
     private Path path;
 
+    //The panel in the Gameview, this is used a reference point for ship creation
     private Panel panel;
 
     //Integer direction values and constants
@@ -58,20 +60,16 @@ public class Ship extends GameObject implements Movable, Firing {
         this.map = map;
         path = new Path();
         this.panel = panel;
-        // set position randomly (not currently used)
-        //this.xPosition = (int)(Math.random() * (gameView.getWidth() - map.getWidth())) + 1;
-        //this.xPosition = (int)(Math.random() * (gameView.getHeight() - map.getHeight())) + 1;
 
         // set position by input
         this.xPosition = xPosition;
         this.yPosition = yPosition;
 
-        // set speed randomly (not currently used)
-        random = new Random();
-        //setRandomSpeed();
+        //The ship starts with 0 speed in either direction
         this.xSpeed = 0;
         this.ySpeed = 0;
 
+        //All ships are facing the same direction and no ship is select
         this.direction = 0;
         this.shipSelect = false;
 
@@ -79,6 +77,7 @@ public class Ship extends GameObject implements Movable, Firing {
         this.xCoords = new ArrayList<Integer> ();
         this.yCoords = new ArrayList<Integer> ();
 
+        //Setting the ships starting health
         this.health = health;
 
 
@@ -88,37 +87,12 @@ public class Ship extends GameObject implements Movable, Firing {
 
     }
 
-    public int getDirectionID(int direction){
-
-        //Animations bugging out when path is involved
-
-        /*if(shipSelect == false){
-            if(direction == UP){
-                return R.drawable.ship_up;
-            }
-            if(direction == RIGHT){
-                return R.drawable.ship_right;
-            }
-            if(direction == DOWN){
-                return R.drawable.ship_down;
-            }
-
-            return R.drawable.ship_left;
-        }//end outer if
-        else{
-            if(direction == UP){
-                return R.drawable.select_ship_up;
-            }
-            if(direction == RIGHT){
-                return R.drawable.select_ship_right;
-            }
-            if(direction == DOWN){
-                return R.drawable.select_ship_down;
-            }
-
-            return R.drawable.select_ship_left;
-
-        }*/
+    /**
+     * Returns the sprite relevant for the ships current condition. If the ship is not active
+     * it will just be ship_right but if it is being selected then it will be select_ship_right
+     * @return the relevant sprite
+     */
+    public int getDirectionID(){
         if(shipSelect == false){
             return R.drawable.ship_right;
 
@@ -126,6 +100,10 @@ public class Ship extends GameObject implements Movable, Firing {
         return R.drawable.select_ship_right;
     }
 
+    /**
+     * Gets the integer associated with the ships current direction based on it's x and y speeds
+     * @return the ships direction
+     */
     public int getDirection(){
         if(xSpeed > 0 && ySpeed == 0){
             return RIGHT;
@@ -152,8 +130,6 @@ public class Ship extends GameObject implements Movable, Firing {
             return UPLEFT;
         }
 
-
-
         return direction;
     }
 
@@ -161,9 +137,13 @@ public class Ship extends GameObject implements Movable, Firing {
      */
     @Override
     public void update(){
+        //Getting the x and y coordinates of the center point of the ship
         int centreX = xPosition + map.getWidth()/2;
         int centreY = yPosition + map.getHeight()/2;
+
+        //We need to make sure that the ship has not collided with the edge of the screen
         checkEdges();
+
         // move the ship by increments of its speed
         // amd update path to draw
         if(xCoords.size() > 0) {
@@ -180,11 +160,14 @@ public class Ship extends GameObject implements Movable, Firing {
             xPosition = xPosition + xSpeed;
             yPosition = yPosition + ySpeed;
 
+            //If the ship is at the next point referenced in the xCoords and yCoords arraylist
+            //then we no longer need to keep track of that coordinate
             if(Math.abs(centreX - xCoords.get(0)) <1 && Math.abs(centreY - yCoords.get(0)) <1){
                xCoords.remove(0);
                yCoords.remove(0);
             }
 
+            //We also need to calculate which direction the ship is facing after moving
             direction = getDirection();
         }
 
@@ -192,6 +175,14 @@ public class Ship extends GameObject implements Movable, Firing {
 
     }
 
+    /**
+     * We also need to calculate the speed at which the ship will move based on where it is
+     * now and where it will be next turn
+     * @param nextX the x coordinate it will occupy after moving
+     * @param nextY the y coordinate it will occupy after moving
+     * @param centreX the x coordinate it is currently occupying
+     * @param centreY the y coordinate it is currently occupying
+     */
     public void calculateNextSpeed(int nextX, int nextY, int centreX, int centreY){
        xSpeed = nextX - centreX;
        ySpeed = nextY - centreY;
@@ -213,6 +204,10 @@ public class Ship extends GameObject implements Movable, Firing {
         }
     }
 
+    /**
+     * Checing whether or not the ship is colliding with the edge of the screen.
+     * If it is then we redirect the ship
+     */
     public void checkEdges(){
 
         int pixel_offset = 5;
@@ -237,6 +232,10 @@ public class Ship extends GameObject implements Movable, Firing {
 
     }
 
+    /**
+     * If we want to reset the player's path, in the case that they want to draw another path,
+     * we simply clear the arraylist
+     */
     public void clearAllButHead(){
 
         if(xCoords.size() <= 0){
@@ -317,16 +316,17 @@ public class Ship extends GameObject implements Movable, Firing {
         return x > xPosition && x < xPosition + map.getWidth() && y > yPosition && y < yPosition + map.getHeight();
     }
 
-
-    //ACCESSOR AND MUTATORs
-
     //Methods implemented from the Firing interface
     @Override
     public void shoot(){
 
     }
 
-
+    /**
+     * Calculates whether or not another GameObject is in shooting range of this ship
+     * @param target the object we are testing
+     * @return true if the object is in shooting range
+     */
     @Override
     public boolean calculateShootingRange(GameObject target){
 
@@ -350,8 +350,10 @@ public class Ship extends GameObject implements Movable, Firing {
         return false;
 
     }
-    //ACCESSORS AND MUTATORS
 
+    //=============================================================================================
+    //                          ACCESSOR AND MUTATOR METHODS
+    //=============================================================================================
 
     public int getXSpeed() {
         return xSpeed;
@@ -387,16 +389,6 @@ public class Ship extends GameObject implements Movable, Firing {
 
     public Bitmap getMap() {
         return map;
-    }
-
-    public void setRandomSpeed() {
-        this.xSpeed = speeds[random.nextInt(speeds.length)];
-        this.ySpeed = speeds[random.nextInt(speeds.length)];
-
-        if (xSpeed == 0 && ySpeed == 0){
-            setRandomSpeed();
-            return;
-        }
     }
 
     public void setMap(Bitmap map) {

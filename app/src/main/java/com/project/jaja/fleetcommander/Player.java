@@ -48,55 +48,6 @@ public class Player {
         this.shipColour = shipColour;
     }
 
-
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
-    public String getMacAddress() {
-        return macAddress;
-    }
-
-    public void setMacAddress(String macAddress) {
-        this.macAddress = macAddress;
-    }
-
-    public void setShipColour(String shipColour) {
-        this.shipColour = shipColour;
-    }
-
-    public int getTurn() {
-        return turn;
-    }
-
-    public void setTurn(int turn) {
-        this.turn = turn;
-    }
-
-    public int getMaxSteps() {
-        return maxSteps;
-    }
-
-    public void setMaxSteps(int maxSteps) {
-        this.maxSteps = maxSteps;
-    }
-
-    public ArrayList<Ship> getFleet() {
-        return fleet;
-    }
-
-    public void setFleet(ArrayList<Ship> fleet) {
-        this.fleet = fleet;
-    }
-
-    public void removeShipFromFleet(Ship deadShip){
-        this.fleet.remove(deadShip);
-    }
-
     /**
      * A method that takes in the JSON sent by the other player and then updates
      * the player's game board with the data
@@ -124,7 +75,7 @@ public class Player {
         if (mac.equals("") && turn == 0) {
             macAddress = mac;
 
-        // Check after every other turn
+            // Check after every other turn
         } else if (!mac.equals(macAddress)) {
             Log.d("playercheck", "player MAC address changed, system exiting...");
             System.exit(1);
@@ -202,6 +153,58 @@ public class Player {
         data.put("ships", ships);
 
         return data.toString();
+    }
+
+    //=============================================================================================
+    //                          ACCESSOR AND MUTATOR METHODS
+    //=============================================================================================
+
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public String getMacAddress() {
+        return macAddress;
+    }
+
+    public void setMacAddress(String macAddress) {
+        this.macAddress = macAddress;
+    }
+
+    public void setShipColour(String shipColour) {
+        this.shipColour = shipColour;
+    }
+
+    public int getTurn() {
+        return turn;
+    }
+
+    public void setTurn(int turn) {
+        this.turn = turn;
+    }
+
+    public int getMaxSteps() {
+        return maxSteps;
+    }
+
+    public void setMaxSteps(int maxSteps) {
+        this.maxSteps = maxSteps;
+    }
+
+    public ArrayList<Ship> getFleet() {
+        return fleet;
+    }
+
+    public void setFleet(ArrayList<Ship> fleet) {
+        this.fleet = fleet;
+    }
+
+    public void removeShipFromFleet(Ship deadShip){
+        this.fleet.remove(deadShip);
     }
 
     public String getShipColour(){

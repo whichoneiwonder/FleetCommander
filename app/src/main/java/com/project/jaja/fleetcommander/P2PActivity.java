@@ -21,7 +21,7 @@ import java.net.SocketException;
 import java.util.Enumeration;
 
 /**
- *
+ * A class that deals with the connection over WIFI-direct
  */
 public class P2PActivity extends Activity {
     /**

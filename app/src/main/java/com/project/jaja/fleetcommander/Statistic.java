@@ -30,12 +30,41 @@ public class Statistic {
         this.dateTime = DateFormat.getDateTimeInstance().format(new Date());
     }
 
+    /**
+     * Constructs a Statistic that occured a date other than the current time
+     * @param myScore the player's score
+     * @param opponentScore the opponent's score
+     * @param dateTime the time at which the statistic occured
+     */
     public Statistic(int myScore, int opponentScore, String dateTime) {
         this.myScore = myScore;
         this.opponentScore = opponentScore;
         this.dateTime = dateTime;
     }
 
+    /**
+     * This calculates whether you won or lost the game and returns the appropriate string
+     * @return HTML String to be used in the generated table
+     */
+    public String winOrLose() {
+        String result = "";
+
+        if (myScore > opponentScore) {
+            result += "<b><font color=\"green\">WON</font></b>";
+        } else if (myScore < opponentScore) {
+            result += "<b><font color=\"red\">LOST</font></b>";
+        } else {
+            result += "<b>DRAW</b>";
+        }
+
+        String score = Integer.toString(myScore) + "/" + Integer.toString(opponentScore);
+
+        return result + " - " + score;
+    }
+
+    //=============================================================================================
+    //                          ACCESSOR AND MUTATOR METHODS
+    //=============================================================================================
     public int getMyScore() {
         return myScore;
     }
@@ -60,23 +89,4 @@ public class Statistic {
         this.dateTime = dateTime;
     }
 
-    /**
-     * This calculates whether you won or lost the game and returns the appropriate string
-     * @return HTML String to be used in the generated table
-     */
-    public String winOrLose() {
-        String result = "";
-
-        if (myScore > opponentScore) {
-            result += "<b><font color=\"green\">WON</font></b>";
-        } else if (myScore < opponentScore) {
-            result += "<b><font color=\"red\">LOST</font></b>";
-        } else {
-            result += "<b>DRAW</b>";
-        }
-
-        String score = Integer.toString(myScore) + "/" + Integer.toString(opponentScore);
-
-        return result + " - " + score;
-    }
 }
