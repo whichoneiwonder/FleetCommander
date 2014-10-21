@@ -96,7 +96,7 @@ public class GameObject{
         //are colliding
         if(gameView.getMappedScreenX(enemyX) == gameView.getMappedScreenX(xPosition) &&
             gameView.getMappedScreenY(enemyY) == gameView.getMappedScreenY(yPosition) ){
-            v.vibrate(2000);
+            v.vibrate(100);
             //Given that we deal different amounts of damaged based on what type of collision is
             //occuring, we need to examine the directions of the ships so that we can determine
             //exactly what type of collision has occured.

@@ -95,10 +95,18 @@ public class Ship extends GameObject implements Movable, Firing {
      * @return the relevant sprite
      */
     public int getDirectionID(){
-        if(shipSelect == false){
-            return R.drawable.ship_right;
+        if(color.equals("blue")) {
+            if (shipSelect == false) {
+                return R.drawable.ship_right;
             }
             return R.drawable.select_ship_right;
+        }
+        else{
+            if (shipSelect == false) {
+                return R.drawable.enemy_ship_right;
+            }
+            return R.drawable.select_ship_right;
+        }
     }
 
     /**
@@ -278,6 +286,8 @@ public class Ship extends GameObject implements Movable, Firing {
     public void onDraw(Canvas canvas) {
         // paint to color ship's path with
         Paint paint = new Paint();
+        Paint healthBar = new Paint();
+        healthBar.setColor(Color.rgb(129,240, 135));
         if(color.equals("blue")) {
             paint.setColor(Color.BLUE);
         }
@@ -300,6 +310,11 @@ public class Ship extends GameObject implements Movable, Firing {
                 yPosition + (map.getHeight() / 2));
         //draw the ship in rotated frame at its position
         canvas.drawBitmap(map, xPosition , yPosition, null);
+        canvas.drawRect((float)xPosition+7,
+                (float)yPosition+map.getHeight()/2 -1 ,
+                (float) xPosition + map.getWidth()*health/100 - 10,
+                (float)yPosition+map.getHeight()/2 +1,
+                healthBar);
         //restore the canvas to its original orientation
         canvas.restore();
 
