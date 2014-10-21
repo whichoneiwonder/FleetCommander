@@ -46,6 +46,8 @@ public class Ship extends GameObject implements Movable, Firing {
     public final static int UP = 6;
     public final static int UPRIGHT = 7;
 
+    private String color;
+
     /**ShipSprite Constructor for specifying all but speed
      *
      * @param gameView  - the view it will be attached to
@@ -53,7 +55,7 @@ public class Ship extends GameObject implements Movable, Firing {
      * @param xPosition - position in x
      * @param yPosition - position in y
      */
-    public Ship(GameView gameView, Bitmap map, int xPosition, int yPosition, int health, Panel panel){
+    public Ship(GameView gameView, Bitmap map, int xPosition, int yPosition, int health, String color, Panel panel){
         this.gameView = gameView;
         this.map = map;
         path = new Path();
@@ -80,6 +82,7 @@ public class Ship extends GameObject implements Movable, Firing {
         this.yCoords = new ArrayList<Integer> ();
 
         this.health = health;
+        this.color = color;
 
 
     }
@@ -88,7 +91,7 @@ public class Ship extends GameObject implements Movable, Firing {
 
     }
 
-    public int getDirectionID(int direction){
+    public int getDirectionID(int direction) {
 
         //Animations bugging out when path is involved
 
@@ -119,11 +122,19 @@ public class Ship extends GameObject implements Movable, Firing {
             return R.drawable.select_ship_left;
 
         }*/
-        if(shipSelect == false){
-            return R.drawable.ship_right;
+        if (color.equals("Blue")) {
+            if (shipSelect == false) {
+                return R.drawable.ship_right;
 
+            }
+            return R.drawable.select_ship_right;
         }
-        return R.drawable.select_ship_right;
+        else{
+            if(shipSelect == false){
+                return R.drawable.enemy_ship_right;
+            }
+            return R.drawable.select_ship_right;
+        }
     }
 
     public int getDirection(){
@@ -262,9 +273,7 @@ public class Ship extends GameObject implements Movable, Firing {
         int screenX = gameView.getMappedScreenX((int) event.getX());
         int screenY = gameView.getMappedScreenY((int) event.getY());
         //append the new coordinates to the path
-        if(xCoords.isEmpty()){
 
-        }
         xCoords.add(screenX);
         yCoords.add(screenY);
 
@@ -280,7 +289,12 @@ public class Ship extends GameObject implements Movable, Firing {
     public void onDraw(Canvas canvas) {
         // paint to color ship's path with
         Paint paint = new Paint();
-        paint.setColor(Color.WHITE);
+        if(color.equals("Blue")) {
+            paint.setColor(Color.BLUE);
+        }
+        else{
+            paint.setColor(Color.RED);
+        }
         paint.setStrokeWidth(3);
         paint.setStyle(Paint.Style.STROKE );
 

@@ -46,6 +46,7 @@ public class Player {
         this.turn = turn;
         this.maxSteps = maxSteps;
         this.shipColour = shipColour;
+        this.fleet = new ArrayList<Ship>();
     }
 
 

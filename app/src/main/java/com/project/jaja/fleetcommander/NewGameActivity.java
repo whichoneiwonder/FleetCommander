@@ -353,9 +353,9 @@ public class NewGameActivity extends Activity {
                                             // check alive
                                             if (myPlayer.stillHasShips() &&
                                                     opponent.stillHasShips()) {
-                                                timeLeft = 10000;
-                                                countDown = new MyCount(timeLeft, 1000);
-                                                countDown.start();
+                                                    timeLeft = 10000;
+                                                    countDown = new MyCount(timeLeft, 1000);
+                                                    countDown.start();
 
                                             } else if (!myPlayer.stillHasShips()) {
                                                 sendEndGame("me");
