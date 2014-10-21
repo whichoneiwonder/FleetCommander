@@ -227,12 +227,7 @@ public class GameView extends SurfaceView {
         map = BitmapFactory.decodeResource(getResources(), drawable);
 
         //Creates the new ship at the specified location
-<<<<<<< HEAD
-        Ship newShip = new Ship(this, map, 110 + numShipsCreated*10, 100, 100,panel);
-=======
-
         Ship newShip = new Ship(this, map, startingX, startingY, 100, color, panel);
->>>>>>> origin/correct_render_of_ship
         numShipsCreated++;
         return newShip;
     }
@@ -307,13 +302,11 @@ public class GameView extends SurfaceView {
 
             Ship ship = (Ship) allShips.get(i);
 
-            //gets the image needed to be displayed based on the direction
-            int resourceID = ship.getDirectionID(ship.getDirection());
+
+            int resourceID = ship.getDirectionID();
             //sets the image of the ship to the specified image
             ship.setMap(BitmapFactory.decodeResource(getResources(), resourceID));
-            //draws the ship onto the canvas
             ship.onDraw(canvas);
-            //Log.d("SHIP DRAWING", "MY SHIP IS BEING DRAWN");
 
             //This will eventually be looping through all GameObjects, not just ships
 
