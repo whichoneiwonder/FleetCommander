@@ -125,7 +125,7 @@ public class Player {
             macAddress = mac;
 
         // Check after every other turn
-        } else if (!mac.equals("")) {
+        } else if (!mac.equals(macAddress)) {
             Log.d("playercheck", "player MAC address changed, system exiting...");
             System.exit(1);
         }
