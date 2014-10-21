@@ -85,7 +85,7 @@ public class GameView extends SurfaceView {
 
         //Players
         this.me = me;
-        this.enemy = me;
+        this.enemy = enemy;
 
         //Number of ships to create
         this.numShipsInGame = numShipsInGame;
@@ -201,6 +201,7 @@ public class GameView extends SurfaceView {
                 me.getFleet().add(newShip(R.drawable.enemy_ship_right, getScreenXFromGridX(2+2*i), getScreenYFromGridY(startingRedGridY), "red"));
                 enemy.getFleet().add(newShip(R.drawable.ship_right,getScreenXFromGridX(2+2*i), getScreenYFromGridY(startingBlueGridY), "blue"));
             }
+
 
         }
     }
