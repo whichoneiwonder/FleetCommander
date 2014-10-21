@@ -120,7 +120,12 @@ public class Player {
         }
 
         String mac = data.getString("mac");
-        if (!(mac.equals(macAddress) || mac.equals(""))) {
+        // Empty mac address - after first turn
+        if (mac.equals("") && turn == 0) {
+            macAddress = mac;
+
+        // Check after every other turn
+        } else if (!mac.equals(macAddress)) {
             Log.d("playercheck", "player MAC address changed, system exiting...");
             System.exit(1);
         }

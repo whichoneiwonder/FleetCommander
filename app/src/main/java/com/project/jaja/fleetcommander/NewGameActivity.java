@@ -1,7 +1,10 @@
 package com.project.jaja.fleetcommander;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -10,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 
@@ -34,6 +38,9 @@ public class NewGameActivity extends Activity {
 
     // Server IP
     public String SERVERIP = "";
+
+    // This Player's MAC Address
+    private String mac;
 
     // Default server port
     public static final int SERVERPORT = 5554;
@@ -60,10 +67,7 @@ public class NewGameActivity extends Activity {
     private MyCount countDown;
 
     // Countdown timer time variable
-    private long timeLeft = 30000;
-
-    // Indicates end of round
-    private boolean roundEnd = false;
+    private long timeLeft = 10000;
 
     // Player class associated with this instance
     private Player myPlayer;
@@ -86,6 +90,12 @@ public class NewGameActivity extends Activity {
     // The TextView which shows your IP that you are listening on when running a Serve Thread
     private TextView sent;
 
+    // This game's intent
+    private Intent intent;
+
+    // Statistics for this Player
+    private Statistics stats;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,16 +105,21 @@ public class NewGameActivity extends Activity {
         setContentView(R.layout.activity_new_game);
 
         // Get data from previous View
-        Intent intent = getIntent();
+        intent = getIntent();
         SERVERIP = intent.getStringExtra("SERVERIP");
         CLIENTIP = intent.getStringExtra("CLIENTIP");
+
+        // Find MAC Address, courtesy of StackOverflow
+        WifiManager manager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        WifiInfo info = manager.getConnectionInfo();
+        mac = info.getMacAddress();
 
         sent = (TextView) findViewById(R.id.sent);
         countDown = new MyCount(timeLeft, 1000);
 
         if (CLIENTIP.equals("")) {
             // Server Player always starts play on left of screen
-            myPlayer = new Player(SERVERIP, "", 0, 10, "blue");
+            myPlayer = new Player(SERVERIP, mac, 0, 10, "blue");
             opponent = new Player(CLIENTIP, "", 0, 10, "red");
 
             st = new ServerThread();
@@ -112,7 +127,7 @@ public class NewGameActivity extends Activity {
             serverThread.start();
         } else {
             // Client Player always starts play on right of screen
-            myPlayer = new Player(CLIENTIP, "", 0, 10, "red");
+            myPlayer = new Player(CLIENTIP, mac, 0, 10, "red");
             opponent = new Player(SERVERIP, "", 0, 10, "blue");
 
             ct = new ClientThread();
@@ -129,6 +144,11 @@ public class NewGameActivity extends Activity {
         } else {
             p.addObserver(ct);
         }
+
+        //TODO Avi read from Stats file and instantiate
+        // Read file
+        // stats is in a variable above ^^ Ctrl + F
+        // stats = new Statistics(jsonData);
     }
 
     @Override
@@ -173,11 +193,10 @@ public class NewGameActivity extends Activity {
          */
         @Override
         public void onFinish() {
-            roundEnd = true;
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    myPlayer.setTurn(1);
+                    myPlayer.setTurn(myPlayer.getTurn() + 1);
                     try {
                         out.println(myPlayer.toJSONString());
                     } catch (JSONException e) {
@@ -195,6 +214,10 @@ public class NewGameActivity extends Activity {
      */
     public class ServerThread implements Runnable, Observer {
 
+        /**
+         * Updates when the Panel has been touched
+         * @param o Panel object
+         */
         public void update(Object o) {
             p = (Panel) o;
             if (!p.isPaused()) {
@@ -219,6 +242,37 @@ public class NewGameActivity extends Activity {
             }
         }
 
+        /**
+         * Sends out the game end message
+         * @param user User that lost
+         */
+        public void sendEndGame(String user) {
+            final String result = "GAME END" + user;
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    out.println(result);
+                }
+            });
+        }
+
+        /**
+         * Updates the stats json file and shows a toast message
+         * @param result Result of this game
+         */
+        public void endGame(String result) {
+            Toast.makeText(getApplicationContext(), "YOU " + result, Toast.LENGTH_SHORT).show();
+            Statistic stat = new Statistic(0, 0);
+            // TODO Avi Statistics update
+            // stats.addStatistics(opponent.getMacAddress(), stat);
+            // TODO Avi Statistics write to file
+
+            // Go back to home
+            onStop();
+            intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+        }
+
         public void run() {
             try {
                 if (SERVERIP != null) {
@@ -237,7 +291,6 @@ public class NewGameActivity extends Activity {
                         Socket client = serverSocket.accept();
                         CLIENTIP = client.getInetAddress().getHostAddress();
                         opponent.setIp(CLIENTIP);
-
 
                         try {
                             /* The main loop where connections happen, only broken if opponent
@@ -267,6 +320,13 @@ public class NewGameActivity extends Activity {
                                     @Override
                                     public void run() {
                                         if (line.startsWith("GAME END")) {
+                                            if (line.startsWith("GAME END me")) {
+                                                endGame("WON");
+                                            } else if (line.startsWith("GAME END you")) {
+                                                endGame("LOST");
+                                            } else {
+                                                endGame("DREW");
+                                            }
                                             connected = false;
                                         } else if (line.startsWith("PAUSE")) {
                                             countDown.cancel();
@@ -283,22 +343,39 @@ public class NewGameActivity extends Activity {
                                             String test = null;
                                             try {
                                                 opponent.updatePlayer(line);
-                                                 test = opponent.toJSONString();
+                                                test = opponent.toJSONString();
                                             } catch (JSONException e) {
                                                 e.printStackTrace();
                                             }
                                             Log.d("json", test);
+                                            // TODO Ships move Avi and James
+
+                                            // check alive
+                                            if (myPlayer.stillHasShips() &&
+                                                    opponent.stillHasShips()) {
+                                                timeLeft = 10000;
+                                                countDown = new MyCount(timeLeft, 1000);
+                                                countDown.start();
+
+                                            } else if (!myPlayer.stillHasShips()) {
+                                                sendEndGame("me");
+                                                endGame("LOST");
+                                            } else if (!opponent.stillHasShips()) {
+                                                sendEndGame("you");
+                                                endGame("WON");
+                                            } else {
+                                                sendEndGame("draw");
+                                                endGame("DREW");
+                                            }
                                         }
                                     }
                                 });
                             }
+                            // Go back to home
+                            onStop();
+                            intent = new Intent(getApplicationContext(), MainActivity.class);
+                            startActivity(intent);
 
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    out.println("GAME END");
-                                }
-                            });
                             break;
                         } catch (Exception e) {
                             handler.post(new Runnable() {
@@ -351,6 +428,10 @@ public class NewGameActivity extends Activity {
      */
     public class ClientThread implements Runnable, Observer {
 
+        /**
+         * Updates when the Panel has been touched
+         * @param o Panel object
+         */
         public void update(Object o) {
             p = (Panel) o;
             if (!p.isPaused()) {
@@ -375,6 +456,37 @@ public class NewGameActivity extends Activity {
             }
         }
 
+        /**
+         * Sends out the game end message
+         * @param user User that lost
+         */
+        public void sendEndGame(String user) {
+            final String result = "GAME END" + user;
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    out.println(result);
+                }
+            });
+        }
+
+        /**
+         * Updates the stats json file and shows a toast message
+         * @param result Result of this game
+         */
+        public void endGame(String result) {
+            Toast.makeText(getApplicationContext(), "YOU " + result, Toast.LENGTH_SHORT).show();
+            Statistic stat = new Statistic(0, 0);
+            // TODO Avi Statistics update
+            // stats.addStatistics(opponent.getMacAddress(), stat);
+            // TODO Avi Statistics write to file
+
+            // Go back to home
+            onStop();
+            intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+        }
+
         public void run() {
             try {
                 InetAddress serverAddr = InetAddress.getByName(SERVERIP);
@@ -393,6 +505,13 @@ public class NewGameActivity extends Activity {
                             @Override
                             public void run() {
                                 if (line.startsWith("GAME END")) {
+                                    if (line.startsWith("GAME END me")) {
+                                        endGame("WON");
+                                    } else if (line.startsWith("GAME END you")) {
+                                        endGame("LOST");
+                                    } else {
+                                        endGame("DREW");
+                                    }
                                     connected = false;
                                 } else if (line.startsWith("PAUSE")) {
                                     countDown.cancel();
@@ -414,6 +533,25 @@ public class NewGameActivity extends Activity {
                                         e.printStackTrace();
                                     }
                                     Log.d("json", test);
+                                    // TODO Ships move Avi and James
+
+                                    // check alive
+                                    if (myPlayer.stillHasShips() &&
+                                            opponent.stillHasShips()) {
+                                        timeLeft = 10000;
+                                        countDown = new MyCount(timeLeft, 1000);
+                                        countDown.start();
+
+                                    } else if (!myPlayer.stillHasShips()) {
+                                        sendEndGame("me");
+                                        endGame("LOST");
+                                    } else if (!opponent.stillHasShips()) {
+                                        sendEndGame("you");
+                                        endGame("WON");
+                                    } else {
+                                        sendEndGame("draw");
+                                        endGame("DREW");
+                                    }
                                 } else if (line.startsWith("Connected")) {
                                     sent.setText(line);
                                     countDown.start();
@@ -422,21 +560,8 @@ public class NewGameActivity extends Activity {
                             }
                         });
                     }
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            out.println("GAME END");
-                        }
-                    });
 
-                    socket.close();
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            sent.setText("socket closed");
-                        }
-                    });
-                    Log.d("ClientActivity", "C: Closed.");
+                     Log.d("ClientActivity", "Socket closed");
                 } catch (Exception e) {
                     handler.post(new Runnable() {
                         @Override
