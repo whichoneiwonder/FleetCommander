@@ -105,10 +105,7 @@ public class Player {
 
         JSONArray ships = data.getJSONArray("ships");
 
-        // Make sure no extra ships are added in
-        int maxShips = Math.min(ships.length(), 3);
-
-        for (int i = 0; i < maxShips; i++) {
+        for (int i = 0; i < fleet.size(); i++) {
             JSONObject shipJSON = ships.getJSONObject(i);
             JSONObject path = shipJSON.getJSONObject("path");
 

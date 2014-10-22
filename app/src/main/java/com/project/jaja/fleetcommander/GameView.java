@@ -39,7 +39,7 @@ public class GameView extends SurfaceView {
     private int numShipsCreated;
 
     //An integer dictating how many ships we create
-    private int numShipsInGame;
+    public static int numShipsInGame;
 
     //As the grid sizes depend on the size of the screen (to ensure consistency across multiple
     //devices, we need to keep track of the screen width and height
