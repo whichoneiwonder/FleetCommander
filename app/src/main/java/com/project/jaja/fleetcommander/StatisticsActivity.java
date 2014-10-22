@@ -1,6 +1,7 @@
 package com.project.jaja.fleetcommander;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.Menu;
@@ -99,20 +100,8 @@ public class StatisticsActivity extends Activity {
      * @return A string containing all match results for the player
      */
     public String readTxt() {
-        String result = "";
-
-        try {
-            InputStream stream = getAssets().open("toc.txt");
-            int size = stream.available();
-            byte[] buffer = new byte[size];
-            stream.read(buffer);
-            stream.close();
-            result = new String(buffer);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return result;
+        SharedPreferences settings = getSharedPreferences("fleetCommander", 0);
+        return settings.getString("playerStatistics", "");
     }
 
 
