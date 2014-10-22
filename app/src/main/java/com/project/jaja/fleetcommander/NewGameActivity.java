@@ -3,10 +3,12 @@ package com.project.jaja.fleetcommander;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
@@ -18,12 +20,19 @@ import android.widget.Toast;
 import org.json.JSONException;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 
 /*
 *   Created by avnishjain and jmcma and a little help from Anton ;)
@@ -150,10 +159,15 @@ public class NewGameActivity extends Activity {
             p.addObserver(ct);
         }
 
-        //TODO Avi read from Stats file and instantiate
-        // Read file
-        // stats is in a variable above ^^ Ctrl + F
-        // stats = new Statistics(jsonData);
+        //Reading in the statistics from a text file on the SD card and instantiating an instance
+        //of statistics with the retrieved data
+        try {
+            SharedPreferences settings = getSharedPreferences("fleetCommander", 0);
+            stats = new Statistics(settings.getString("playerStatistics", ""));
+        } catch(JSONException e){
+            Log.e("Reading player stats", e.toString());
+        }
+
     }
 
     @Override
@@ -191,6 +205,7 @@ public class NewGameActivity extends Activity {
         @Override
         public void onTick(long millisUntilFinished) {
             timeLeft = millisUntilFinished;
+            p.setTimeLeft(timeLeft);
         }
 
         /**
@@ -269,12 +284,22 @@ public class NewGameActivity extends Activity {
         public void endGame(String result) {
             Toast.makeText(getApplicationContext(), "YOU " + result, Toast.LENGTH_SHORT).show();
             Statistic stat = new Statistic(0, 0);
-            // TODO Avi Statistics update
-            // stats.addStatistics(opponent.getMacAddress(), stat);
-            // TODO Avi Statistics write to file
+
+            //Updating the player statistics
+            stats.addStatistics(opponent.getMacAddress(), stat);
+
+            //Writing the statistics to shared preferences
+            try {
+                SharedPreferences settings = getSharedPreferences("fleetCommander", 0);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString("playerStatistics", stats.toJSONString());
+                editor.commit();
+            } catch(JSONException e){
+                Log.e("Reading player stats", e.toString());
+            }
 
             // Go back to home
-            onStop();
+            closeSockets();
             intent = new Intent(getApplicationContext(), MainActivity.class);
             startActivity(intent);
         }
@@ -317,72 +342,67 @@ public class NewGameActivity extends Activity {
                                 }
                             });
 
-                            connected = true;
-                            while (connected) {
+                            while (true) {
 
                                 line = in.readLine();
 
                                 handler.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        if (line.startsWith("GAME END")) {
-                                            if (line.startsWith("GAME END me")) {
-                                                endGame("WON");
-                                            } else if (line.startsWith("GAME END you")) {
-                                                endGame("LOST");
-                                            } else {
-                                                endGame("DREW");
-                                            }
-                                            connected = false;
-                                        } else if (line.startsWith("PAUSE")) {
-                                            countDown.cancel();
-                                            gv.getPanel().setPause(!p.isPaused());
-                                            gv.setNoClick(true);
-                                            Log.d("Pause", "Pause received");
-                                        } else if (line.startsWith("PLAY")) {
-                                            countDown = new MyCount(timeLeft, 1000);
-                                            countDown.start();
-                                            gv.getPanel().setPause(!p.isPaused());
-                                            gv.setNoClick(false);
-                                            Log.d("Pause", "Play received");
-                                        } else if (line.startsWith("{")) {
-                                            String test = null;
-                                            try {
-                                                opponent.updatePlayer(line);
-                                                test = opponent.toJSONString();
-                                            } catch (JSONException e) {
-                                                e.printStackTrace();
-                                            }
-                                            Log.d("json", test);
-                                            // TODO Ships move Avi and James
+                                        if (line != null) {
+                                            if (line.startsWith("GAME END")) {
+                                                if (line.startsWith("GAME END me")) {
+                                                    endGame("WON");
+                                                } else if (line.startsWith("GAME END you")) {
+                                                    endGame("LOST");
+                                                } else {
+                                                    endGame("DREW");
+                                                }
+                                            } else if (line.startsWith("PAUSE")) {
+                                                countDown.cancel();
+                                                gv.getPanel().setPause(!p.isPaused());
+                                                gv.setNoClick(true);
+                                                Log.d("Pause", "Pause received");
+                                            } else if (line.startsWith("PLAY")) {
+                                                countDown = new MyCount(timeLeft, 1000);
+                                                countDown.start();
+                                                gv.getPanel().setPause(!p.isPaused());
+                                                gv.setNoClick(false);
+                                                Log.d("Pause", "Play received");
+                                            } else if (line.startsWith("{")) {
+                                                String test = null;
+                                                try {
+                                                    opponent.updatePlayer(line);
+                                                    test = opponent.toJSONString();
+                                                } catch (JSONException e) {
+                                                    e.printStackTrace();
+                                                }
+                                                Log.d("json", test);
 
-                                            // check alive
-                                            if (myPlayer.stillHasShips() &&
-                                                    opponent.stillHasShips()) {
+                                                //TODO draw line and move ships
+
+                                                // check alive
+                                                if (myPlayer.stillHasShips() &&
+                                                        opponent.stillHasShips()) {
                                                     timeLeft = 10000;
                                                     countDown = new MyCount(timeLeft, 1000);
                                                     countDown.start();
 
-                                            } else if (!myPlayer.stillHasShips()) {
-                                                sendEndGame("me");
-                                                endGame("LOST");
-                                            } else if (!opponent.stillHasShips()) {
-                                                sendEndGame("you");
-                                                endGame("WON");
-                                            } else {
-                                                sendEndGame("draw");
-                                                endGame("DREW");
+                                                } else if (!myPlayer.stillHasShips()) {
+                                                    sendEndGame("me");
+                                                    endGame("LOST");
+                                                } else if (!opponent.stillHasShips()) {
+                                                    sendEndGame("you");
+                                                    endGame("WON");
+                                                } else {
+                                                    sendEndGame("draw");
+                                                    endGame("DREW");
+                                                }
                                             }
                                         }
                                     }
                                 });
                             }
-                            // Go back to home
-                            onStop();
-                            intent = new Intent(getApplicationContext(), MainActivity.class);
-                            startActivity(intent);
-
-                            break;
                         } catch (Exception e) {
                             handler.post(new Runnable() {
                                 @Override
@@ -416,6 +436,10 @@ public class NewGameActivity extends Activity {
     @Override
     protected void onStop() {
         super.onStop();
+        closeSockets();
+    }
+
+    public void closeSockets() {
         try {
             // MAKE SURE YOU CLOSE THE SOCKET UPON EXITING
             if (serverSocket != null) {
@@ -483,12 +507,22 @@ public class NewGameActivity extends Activity {
         public void endGame(String result) {
             Toast.makeText(getApplicationContext(), "YOU " + result, Toast.LENGTH_SHORT).show();
             Statistic stat = new Statistic(0, 0);
-            // TODO Avi Statistics update
-            // stats.addStatistics(opponent.getMacAddress(), stat);
-            // TODO Avi Statistics write to file
+
+            //Updating the statistics
+            stats.addStatistics(opponent.getMacAddress(), stat);
+
+            //Writing the statistics to sharedPreferences
+            try {
+                SharedPreferences settings = getSharedPreferences("fleetCommander", 0);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString("playerStatistics", stats.toJSONString());
+                editor.commit();
+            } catch(JSONException e){
+                Log.e("Reading player stats", e.toString());
+            }
 
             // Go back to home
-            onStop();
+            closeSockets();
             intent = new Intent(getApplicationContext(), MainActivity.class);
             startActivity(intent);
         }
@@ -503,71 +537,73 @@ public class NewGameActivity extends Activity {
                             new InputStreamReader(socket.getInputStream()));
                     out = new PrintWriter(socket.getOutputStream(), true);
 
-                    connected = true;
-                    while (connected) {
+                    while (true) {
                         line = in.readLine();
 
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                if (line.startsWith("GAME END")) {
-                                    if (line.startsWith("GAME END me")) {
-                                        endGame("WON");
-                                    } else if (line.startsWith("GAME END you")) {
-                                        endGame("LOST");
-                                    } else {
-                                        endGame("DREW");
-                                    }
-                                    connected = false;
-                                } else if (line.startsWith("PAUSE")) {
-                                    countDown.cancel();
-                                    gv.getPanel().setPause(!p.isPaused());
-                                    gv.setNoClick(true);
-                                    Log.d("Pause", "Pause received");
-                                } else if (line.startsWith("PLAY")) {
-                                    countDown = new MyCount(timeLeft, 1000);
-                                    countDown.start();
-                                    gv.getPanel().setPause(!p.isPaused());
-                                    gv.setNoClick(false);
-                                    Log.d("Pause", "Play received");
-                                } else if (line.startsWith("{")) {
-                                    String test = null;
-                                    try {
-                                        opponent.updatePlayer(line);
-                                        test = opponent.toJSONString();
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                    Log.d("json", test);
-                                    // TODO Ships move Avi and James
-
-                                    // check alive
-                                    if (myPlayer.stillHasShips() &&
-                                            opponent.stillHasShips()) {
-                                        timeLeft = 10000;
+                                if (line != null) {
+                                    if (line.startsWith("GAME END")) {
+                                        if (line.startsWith("GAME END me")) {
+                                            endGame("WON");
+                                        } else if (line.startsWith("GAME END you")) {
+                                            endGame("LOST");
+                                        } else {
+                                            endGame("DREW");
+                                        }
+                                        connected = false;
+                                    } else if (line.startsWith("PAUSE")) {
+                                        countDown.cancel();
+                                        gv.getPanel().setPause(!p.isPaused());
+                                        gv.setNoClick(true);
+                                        Log.d("Pause", "Pause received");
+                                    } else if (line.startsWith("PLAY")) {
                                         countDown = new MyCount(timeLeft, 1000);
                                         countDown.start();
+                                        gv.getPanel().setPause(!p.isPaused());
+                                        gv.setNoClick(false);
+                                        Log.d("Pause", "Play received");
+                                    } else if (line.startsWith("{")) {
+                                        String test = null;
+                                        try {
+                                            opponent.updatePlayer(line);
+                                            test = opponent.toJSONString();
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                        Log.d("json", test);
+                                        //TODO draw line and move ships
 
-                                    } else if (!myPlayer.stillHasShips()) {
-                                        sendEndGame("me");
-                                        endGame("LOST");
-                                    } else if (!opponent.stillHasShips()) {
-                                        sendEndGame("you");
-                                        endGame("WON");
-                                    } else {
-                                        sendEndGame("draw");
-                                        endGame("DREW");
+                                        p.setEnemyScore(myPlayer.getScore());
+                                        p.setMyScore(opponent.getScore());
+
+                                        // check alive
+                                        if (myPlayer.stillHasShips() &&
+                                                opponent.stillHasShips()) {
+                                            timeLeft = 10000;
+                                            countDown = new MyCount(timeLeft, 1000);
+                                            countDown.start();
+
+                                        } else if (!myPlayer.stillHasShips()) {
+                                            sendEndGame("me");
+                                            endGame("LOST");
+                                        } else if (!opponent.stillHasShips()) {
+                                            sendEndGame("you");
+                                            endGame("WON");
+                                        } else {
+                                            sendEndGame("draw");
+                                            endGame("DREW");
+                                        }
+                                    } else if (line.startsWith("Connected")) {
+                                        sent.setText(line);
+                                        countDown.start();
+                                        setContentView(gv);
                                     }
-                                } else if (line.startsWith("Connected")) {
-                                    sent.setText(line);
-                                    countDown.start();
-                                    setContentView(gv);
                                 }
                             }
                         });
                     }
-
-                     Log.d("ClientActivity", "Socket closed");
                 } catch (Exception e) {
                     handler.post(new Runnable() {
                         @Override
