@@ -17,9 +17,15 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Map;
 
-
+/**
+ * The class actually responsible for match statistics of the player
+ */
 public class StatisticsActivity extends Activity {
 
+
+    /**
+     * Converts the read match statistics into an HTML output that is easily human readable
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,7 +41,7 @@ public class StatisticsActivity extends Activity {
             e.printStackTrace();
         }
 
-        // The following is a quick and easy statistics interface focussed around the actual
+        // The following is a quick and easy statistics interface focused around the actual
         // features and not too much on the UI. This is a core feature but not in terms of UI
         TableLayout tl = (TableLayout) findViewById(R.id.tableLayout1);
 
@@ -88,6 +94,10 @@ public class StatisticsActivity extends Activity {
         }
     }
 
+    /**
+     * Reading the statistics in from the text file on the device
+     * @return A string containing all match results for the player
+     */
     public String readTxt() {
         String result = "";
 

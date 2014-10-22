@@ -62,19 +62,35 @@ public class MainActivity extends Activity {
         }
     };
 
-
+    /**
+     * Opening the Peer-to-peer activity so that a connection can be made
+     * @param view the View from which this method is being called
+     */
     public void goToP2P(View view) {
         Intent intent = new Intent(getApplicationContext(), P2PActivity.class);
         startActivity(intent);
     }
 
+    /**
+     * Opening the new game activity so that a new game can be started
+     * @param view the View from which this method is being called
+     */
     public void goToNewGame(View view) {
         Intent intent = new Intent(getApplicationContext(), NewGameActivity.class);
         startActivity(intent);
     }
 
+    /**
+     * Opening the Statistics activity so that game score history can be seen
+     * @param view the View from which this method is being called
+     */
     public void goToStatistics(View view) {
         Intent intent = new Intent(getApplicationContext(), StatisticsActivity.class);
+        startActivity(intent);
+    }
+
+    public void goToTestActivity(View view) {
+        Intent intent = new Intent(getApplicationContext(), TestActivity.class);
         startActivity(intent);
     }
 }

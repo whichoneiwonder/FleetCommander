@@ -29,43 +29,6 @@
 
         </LinearLayout>
 
-        <EditText
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/message_field"
-            android:hint="@string/message_hint"
-            android:layout_marginBottom="138dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_gravity="center_horizontal|top" />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/pause_play"
-            android:id="@+id/pause_button"
-            android:layout_alignParentStart="true"
-            android:layout_above="@+id/send_button"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_gravity="center" />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/sendButtonText"
-            android:id="@+id/send_button"
-            android:layout_alignParentStart="true"
-            android:layout_above="@+id/message_field"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_gravity="left|center_vertical" />
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -78,16 +41,6 @@
             android:layout_alignParentStart="true"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:id="@+id/count_down_text"
-            android:layout_below="@+id/sent"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="38dp" />
-
 
     </FrameLayout>
 </FrameLayout>

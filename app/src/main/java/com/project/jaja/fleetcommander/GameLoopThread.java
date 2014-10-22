@@ -21,26 +21,6 @@ public class GameLoopThread extends Thread {
         this.view = view;
     }
 
-    /** setGameState
-     *      - parameters : boolean gameState
-     *  Mutator method for the isGameStateActive variable*/
-    public void setGameState(boolean gameState){
-        isGameStateActive = gameState;
-    }
-
-    /** isGameStateActive
-     *
-     *  Accessor method for the isGameStateActive variable */
-    public boolean isGameStateActive(){
-        return isGameStateActive;
-    }
-
-    /** Overriden method of the superclass Thread
-     *
-     * Acts as the infinite game loop. Mirrors the update method
-     * in the Slick main class.
-     *
-     * */
     @Override
     public void run(){
 
@@ -84,5 +64,33 @@ public class GameLoopThread extends Thread {
             }
         } // end while loop
     }
+
+    //=============================================================================================
+    //                          ACCESSOR AND MUTATOR METHODS
+    //=============================================================================================
+
+    /**
+     *  @param gameState a boolean value representing whether the game is active or not
+     *  Mutator method for the isGameStateActive variable
+     */
+    public void setGameState(boolean gameState){
+        isGameStateActive = gameState;
+    }
+
+    /**
+     * @return isGameStateActive a boolean value representing whether or not the game
+     * is active
+     *  Accessor method for the isGameStateActive variable
+     */
+    public boolean isGameStateActive(){
+        return isGameStateActive;
+    }
+
+    /** Overriden method of the superclass Thread
+     *
+     * Acts as the infinite game loop. Mirrors the update method
+     * in the Slick main class.
+     *
+     * */
 
 }

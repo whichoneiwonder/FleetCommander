@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.Point;
 import android.os.Vibrator;
 import android.util.Log;
@@ -41,70 +40,108 @@ public class GameView extends SurfaceView {
 
     //An integer dictating how many ships we create
     private int numShipsInGame;
+
+    //As the grid sizes depend on the size of the screen (to ensure consistency across multiple
+    //devices, we need to keep track of the screen width and height
     public int screenheight;
     public int screenwidth;
 
+    //The score panel at the top of the screen
     private Panel panel;
 
+    //A reference to the Android vibration function allowing us to provide haptic feedback to the
+    //player
     private Vibrator v;
 
+    //As we render the player ships at the top of the screen and the enemy ships at the bottom
+    //of the screen we need to keep reference to the x and y values of these points
     private int buttonLeftX;
     private int buttonTopY;
     private int buttonRightX;
     private int buttonBottomY;
 
+    //Allowing us to keep track of the information pertaining to the grid superimposed on
+    //the GameView
     private int gridLeft, gridRight, gridTop, gridBottom;
     public final static int numXGridPoints = 10;
     public final static int numYGridPoints = 15;
 
+    //We also need to know which gridspaces we start rendering player and enemy ships in
+    public final static int playerXStartingGrid = 1;
+    public final static int playerYStartingGrid = 1;
+    public final static int enemyXStartingGrid = 1;
+    public final static int enemyYStartingGrid = 13;
+
+
     //a register
     private Ship shipReceivingInput = null;
 
+    //Keeping track of the last player click
     private long lastClick;
 
     //Keeping track of the two players in the game
     private Player me;
     private Player enemy;
 
-
+    //Keeping track of whether or not a click has occured
+    private boolean noClick = false;
 
     /**
      * Constructor of the view
      * @param context -> Context of the game which comes from NewGameActivity
+     * @param me Reference to the current user's player object
+     * @param enemy Reference to the opponent's player object
+     * @param numShipsInGame An integer determing how many ships should be rendered when the game
+     *                       starts. This is on a per-player basis, so if numShipsInGame == 3 then
+     *                       6 ships will be rendered. 3 for the Player and 3 for the Opponent
      */
     public GameView(Context context, Player me, Player enemy, int numShipsInGame){
         super(context);
 
-        //Creates the tread
+        //Creates the thread
         thread = new GameLoopThread(this);
 
         //Players
         this.me = me;
-        this.enemy = me;
+        this.enemy = enemy;
 
         //Number of ships to create
         this.numShipsInGame = numShipsInGame;
 
+
+        //Accessing the current Android window
         WindowManager window = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+
+        //Accessing the phone's vibrate function
         v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
 
+        //Accessing the window's display and setting necessary properties
         Display display = window.getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
 
+        //Getting information about the player's screen
         screenheight = size.y;
         screenwidth = size.x;
 
-
+        //Instantiating the panel which sits at the top of the screen
         panel = new Panel(this);
 
+        //Determing the grid spaces based on screen size
         gridTop = (int) (1.1*panel.getHeight());
         gridBottom = (int) (screenheight * 0.95);
         gridLeft = (int) (screenwidth * 0.05);
         gridRight =  (int) (screenwidth * 0.95);
 
-        Log.i("Dimensions", "Screenheight: " + screenheight + "\nScreen Width: " + screenwidth);
+        //This keeps track of how many ships have been created (different from numShipsInGame), as
+        //we have not called populatShips() yet this should be 0
         numShipsCreated = 0;
+
+        //Creates all the ships
+        populateShips();
+
+        //We need to access the surfaceHolder so that we can add a callback methods,
+        // surfaceCreated(), surfaceChanged() and surfaceDestroyed()
         surfaceHolder = getHolder();
         surfaceHolder.addCallback(new SurfaceHolder.Callback() {
 
@@ -114,10 +151,6 @@ public class GameView extends SurfaceView {
              */
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
-
-                //Creates all the ships
-                populateShips();
-
                 //Starts the thread and game loop
                 thread.setGameState(true);
                 thread.start();
@@ -150,12 +183,13 @@ public class GameView extends SurfaceView {
                     }
                 }
 
-
             }
         });
 
 
     }
+
+
 
     /**
      *  Method call that populates the ArrayList.
@@ -163,20 +197,21 @@ public class GameView extends SurfaceView {
      *  one place
      */
     protected void populateShips(){
-        ArrayList<Ship> blue_ships = new ArrayList<Ship>();
-        ArrayList<Ship> red_ships = new ArrayList<Ship>();
+
+        int startingBlueGridY = (int)(numYGridPoints*0.1);
+
+        int startingRedGridY =(int)(numYGridPoints*0.9);
 
         for(int i = 0; i < numShipsInGame; i++){
-            blue_ships.add(newShip(R.drawable.ship_right));
-            red_ships.add(newShip(R.drawable.enemy_ship_right));
-        }
+            if(me.getShipColour().equals("blue")){
+                me.getFleet().add(newShip(R.drawable.ship_right, getScreenXFromGridX(2+2*i), getScreenYFromGridY(startingBlueGridY), "blue"));
+                enemy.getFleet().add(newShip(R.drawable.enemy_ship_right, getScreenXFromGridX(2+2*i), getScreenYFromGridY(startingRedGridY), "red"));
+            } else{
+                me.getFleet().add(newShip(R.drawable.enemy_ship_right, getScreenXFromGridX(2+2*i), getScreenYFromGridY(startingRedGridY), "red"));
+                enemy.getFleet().add(newShip(R.drawable.ship_right,getScreenXFromGridX(2+2*i), getScreenYFromGridY(startingBlueGridY), "blue"));
+            }
 
-        if(me.getShipColour().equals("blue")){
-            me.setFleet(blue_ships);
-            enemy.setFleet(red_ships);
-        } else{
-            me.setFleet(red_ships);
-            enemy.setFleet(blue_ships);
+
         }
     }
 
@@ -184,18 +219,23 @@ public class GameView extends SurfaceView {
      *  Creates a sprite of a ship
      *
      * @param drawable --> R.drawable.id that is generated by Android
-     * @return the Sprite of the ship
+     * @param startingX The starting x coordinate of the ship
+     * @return newShip, the newly created ship
      */
-    protected Ship newShip(int drawable){
+    protected Ship newShip(int drawable, int startingX, int startingY, String color){
         //sets the image of the ship to the one specified
         map = BitmapFactory.decodeResource(getResources(), drawable);
 
         //Creates the new ship at the specified location
-
-        Ship newShip = new Ship(this, map, (numShipsCreated * 110)+30, 70, 100,panel);
+        Ship newShip = new Ship(this, map, startingX, startingY, 100, color, panel);
         numShipsCreated++;
         return newShip;
     }
+
+    /**
+     * @param canvas The canvas on which the pause button should be drawn
+     * A method to draw the pause button onto the passed in canvas
+     */
 
     protected void renderPauseButton(Canvas canvas){
         Paint button = new Paint();
@@ -216,6 +256,7 @@ public class GameView extends SurfaceView {
 
         canvas.drawRect(buttonLeftX, buttonTopY, buttonRightX, buttonBottomY, button);
 
+        //We change the text of the button based on the current state of the game
         if(panel.isPaused()) {
             canvas.drawText("Resume", buttonLeftX + 5, (buttonBottomY - buttonTopY)/2+pixel_offset, buttonText);
         }
@@ -224,7 +265,11 @@ public class GameView extends SurfaceView {
         }
     }
 
-
+    /**
+     * A method to determine whether the pause button is being clicked
+     * @param event The motion event which we must interpret
+     * @return true if the button is being clicked
+     */
     public boolean isClickingButton(MotionEvent event){
         if(event.getX() > buttonLeftX && event.getX() < buttonRightX && event.getY() > buttonTopY && event.getY() < buttonBottomY){
             return true;
@@ -240,43 +285,51 @@ public class GameView extends SurfaceView {
      */
     protected void onDraw(Canvas canvas){
         //Sets the background to the RGB Value
-         canvas.drawColor(Color.rgb(0,153,204));
+        me.updatePlayerFleet();
+        enemy.updatePlayerFleet();
+        canvas.drawColor(Color.rgb(0,153,204));
 
+        panel.onDraw(canvas);
         panel.onDraw(canvas);
         renderPauseButton(canvas);
 
         //Abstract to a function and potentially in the wrong place (should be in ShipSprite)
         //If the ship bounces of an edge it changes direction
-        ArrayList<Ship> myShips = me.getFleet();
-        for(int i = 0; i < myShips.size(); i++){
+        ArrayList<GameObject> allShips = new ArrayList<GameObject>();
+        allShips.addAll(me.getFleet());
+        allShips.addAll(enemy.getFleet());
+        for(int i = 0; i < allShips.size(); i++){
 
-            Ship myShip = myShips.get(i);
+            Ship ship = (Ship) allShips.get(i);
 
-            //gets the image needed to be displayed based on the direction
-            int resourceID = myShip.getDirectionID(myShip.getDirection());
+
+            int resourceID = ship.getDirectionID();
             //sets the image of the ship to the specified image
-            myShip.setMap(BitmapFactory.decodeResource(getResources(), resourceID));
-
-            //draws the ship onto the canvas
-            myShip.onDraw(canvas);
+            ship.setMap(BitmapFactory.decodeResource(getResources(), resourceID));
+            ship.onDraw(canvas);
 
             //This will eventually be looping through all GameObjects, not just ships
-            ArrayList<Ship> enemyShips = enemy.getFleet();
-            for(int j = 0; j < enemyShips.size(); j++) {
 
-                Ship enemyShip = enemyShips.get(j);
-
-                if(enemyShip.stillAlive()) {
-                    myShip.detectCollision(enemyShip, v);
-                    myShip.calculateShootingRange(enemyShip, v);
-                } else{
-                    enemy.removeShipFromFleet(enemyShip);
+            for(int j = 0; j < allShips.size(); j++) {
+                Ship otherShip = null;
+                if(i != j) {
+                    otherShip = (Ship) allShips.get(j);
                 }
+
+                if (otherShip != null && otherShip.stillAlive()) {
+                    ship.detectCollision(otherShip, v);
+                }
+
             }
         }
     }
 
-
+    /**
+     * As we have implemented a grid system, we need a method that can convert an x coordinate
+     * into a grid number
+     * @param screenX the player's x coordinate on the screen
+     * @return the x value of the grid space that the player is occupying
+     */
     public int getGridXFromScreenX(int screenX){
         if(screenX >= gridRight){
             return numXGridPoints -1;
@@ -290,6 +343,11 @@ public class GameView extends SurfaceView {
 
     }
 
+    /**
+     * This method is the same as getGridXFromScreenX but it operates in the Y axis
+     * @param screenY the player's y coordinate on the screen
+     * @return the y value of the grid space that the player is occupying
+     */
     public int getGridYFromScreenY(int screenY){
         if(screenY >= gridBottom){
             return numYGridPoints -1;
@@ -303,21 +361,41 @@ public class GameView extends SurfaceView {
 
     }
 
+    /**
+     * Likewise, we need to be able to convert a grid x value to a screen x value
+     * @param gridX the x value of the grid space that the player is occupying
+     * @return the x value on the screen
+     */
     public int getScreenXFromGridX(int gridX){
         double spaceBetweenGridPoints = (gridRight - gridLeft)/((double) numXGridPoints);
         return gridLeft + (int) (spaceBetweenGridPoints * gridX);
     }
 
+    /**
+     * Same as getScreenXFromGridX but operates in the Y axis
+     * @param gridY the y value of the grid space the player is occupying
+     * @return the y value of where the player is on the screen
+     */
     public int getScreenYFromGridY(int gridY){
         double spaceBetweenGridPoints = (gridBottom - gridTop)/((double) numYGridPoints);
         return gridTop + (int) (spaceBetweenGridPoints * gridY);
     }
 
+    /**
+     * Converts an integer value into the screen x value the player is occupying
+     * @param eventX the event x coordinate
+     * @return the Screen X value
+     */
     public int getMappedScreenX(int eventX){
         int gridX = getGridXFromScreenX(eventX);
         return getScreenXFromGridX(gridX);
     }
 
+    /**
+     * Converts an integer value into the screen y value the player is occupying
+     * @param eventY the event y coordinate
+     * @return the Screen Y value
+     */
     public int getMappedScreenY(int eventY){
         int gridY = getGridYFromScreenY(eventY);
         return getScreenYFromGridY(gridY);
@@ -332,14 +410,17 @@ public class GameView extends SurfaceView {
      * @return --> Boolean if there has been a touch or not
      */
     @Override
-
-//onTouchEvent
     public boolean onTouchEvent(MotionEvent event) {
-
+        String test = null;
+        if (noClick) {
+            test = "true";
+        } else {
+            test = "false";
+        }
         if (System.currentTimeMillis() - lastClick > 300) {
             lastClick = System.currentTimeMillis();
             synchronized (getHolder()) {
-                if (isClickingButton(event)) {
+                if (isClickingButton(event) && !noClick) {
                     panel.clickPause();
                 }
             }
@@ -405,9 +486,22 @@ public class GameView extends SurfaceView {
         return true;
     }
 
+    /**
+     * Returns this panel
+     * This assists us in checking if the game is paused or playing in the NewGameActivity
+     * @return panel this Game panel
+     */
+    public Panel getPanel() {
+        return panel;
+    }
 
-
-
+    /**
+     * Sets the value of noClick
+     * @param noClick the value we are setting noClick to
+     */
+    public void setNoClick(boolean noClick) {
+        this.noClick = noClick;
+    }
 
 
 }

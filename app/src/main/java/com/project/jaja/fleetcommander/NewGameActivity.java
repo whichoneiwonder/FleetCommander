@@ -11,11 +11,9 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.Window;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 
@@ -26,14 +24,11 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 /*
-*   Created by avnishjain and jmcma and don't forget Anton :)
+*   Created by avnishjain and jmcma and a little help from Anton ;)
 *
-*   Added NewGame button on MainActivity for debugging purposes.
-*   Use this for testing game components when not using the P2P features.
+*   Core game functionality here
 *
 * */
 public class NewGameActivity extends Activity {
@@ -43,6 +38,9 @@ public class NewGameActivity extends Activity {
 
     // Server IP
     public String SERVERIP = "";
+
+    // This Player's MAC Address
+    private String mac;
 
     // Default server port
     public static final int SERVERPORT = 5554;
@@ -62,35 +60,14 @@ public class NewGameActivity extends Activity {
     // The output stream for this connection
     public PrintWriter out = null;
 
-    // Message field where data that was sent is displayed
-    private TextView sent;
-
-    // Countdown text field
-    private TextView countDownText;
-
     // Input String from socket
     private String line = null;
-
-    // Associated with the Play/Pause button in the UI
-    private Button pauseButton;
-
-    // Associated with the sending of Strings in the UI
-    private Button sendButton;
-
-    // The field where the String is entered which will be sent
-    private EditText messageField;
 
     // Countdown timer
     private MyCount countDown;
 
     // Countdown timer time variable
-    private long timeLeft = 30000;
-
-    // Game play is paused when true
-    private boolean paused = false;
-
-    // Indicates end of round
-    private boolean roundEnd = false;
+    private long timeLeft = 10000;
 
     // Player class associated with this instance
     private Player myPlayer;
@@ -98,54 +75,85 @@ public class NewGameActivity extends Activity {
     // Player class associated with other instance
     private Player opponent;
 
-    // This Player's MAC Address
-    private String mac;
+    // The GameView to which we transition when connected
+    private GameView gv;
 
-    // All game statistics
+    // The Panel inside the above declared GameView
+    private Panel p;
+
+    // This ServerThread
+    private ServerThread st = null;
+
+    // This ClientThread
+    private ClientThread ct = null;
+
+    // The TextView which shows your IP that you are listening on when running a Serve Thread
+    private TextView sent;
+
+    // This game's intent
+    private Intent intent;
+
+    // Statistics for this Player
     private Statistics stats;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        //We don't want the created window to have a title bar as games should be an immersive
+        //experience
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         setContentView(R.layout.activity_new_game);
 
         // Get data from previous View
-        Intent intent = getIntent();
+        intent = getIntent();
         SERVERIP = intent.getStringExtra("SERVERIP");
         CLIENTIP = intent.getStringExtra("CLIENTIP");
 
+        // Find MAC Address, courtesy of StackOverflow
         WifiManager manager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         WifiInfo info = manager.getConnectionInfo();
         mac = info.getMacAddress();
 
-        pauseButton = (Button) findViewById(R.id.pause_button);
-        sendButton = (Button) findViewById(R.id.send_button);
+        //The text that is to be sent across the P2P network
         sent = (TextView) findViewById(R.id.sent);
-        countDownText = (TextView) findViewById(R.id.count_down_text);
-        messageField = (EditText) findViewById(R.id.message_field);
         countDown = new MyCount(timeLeft, 1000);
 
-
-
+        //If the CLIENTIP is not set then the user is the server
         if (CLIENTIP.equals("")) {
             // Server Player always starts play on left of screen
             myPlayer = new Player(SERVERIP, mac, 0, 10, "blue");
-            opponent = new Player(CLIENTIP, "",0, 10, "red");
+            opponent = new Player(CLIENTIP, "", 0, 10, "red");
 
-            Thread serverThread = new Thread(new ServerThread());
+            st = new ServerThread();
+            Thread serverThread = new Thread(st);
             serverThread.start();
         } else {
             // Client Player always starts play on right of screen
             myPlayer = new Player(CLIENTIP, mac, 0, 10, "red");
             opponent = new Player(SERVERIP, "", 0, 10, "blue");
 
-            Thread clientThread = new Thread(new ClientThread());
+            ct = new ClientThread();
+            Thread clientThread = new Thread(ct);
             clientThread.start();
         }
 
+        //Once the threads have been started we need to instantiate the GameView and Panel
+        gv = new GameView(getApplicationContext(), myPlayer, opponent, 3);
+        p = gv.getPanel();
+
+        // Observe the panel
+        if (CLIENTIP.equals("")) {
+            p.addObserver(st);
+        } else {
+            p.addObserver(ct);
+        }
+
+        //TODO Avi read from Stats file and instantiate
+        // Read file
+        // stats is in a variable above ^^ Ctrl + F
+        // stats = new Statistics(jsonData);
     }
 
     @Override
@@ -169,6 +177,7 @@ public class NewGameActivity extends Activity {
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Extending CountDownTimer to more easily pause and resume
+    //////////////////////////////////////////////////////////////////////////////////////////////
     public class MyCount extends CountDownTimer {
         public MyCount(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
@@ -182,12 +191,6 @@ public class NewGameActivity extends Activity {
         @Override
         public void onTick(long millisUntilFinished) {
             timeLeft = millisUntilFinished;
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    countDownText.setText("" + timeLeft / 1000);
-                }
-            });
         }
 
         /**
@@ -196,19 +199,15 @@ public class NewGameActivity extends Activity {
          */
         @Override
         public void onFinish() {
-            roundEnd = true;
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    myPlayer.setTurn(1);
+                    myPlayer.setTurn(myPlayer.getTurn() + 1);
                     try {
                         out.println(myPlayer.toJSONString());
-                        countDownText.setText("DONE");
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-
-                    pauseButton.setEnabled(false);
                 }
             });
         }
@@ -219,7 +218,67 @@ public class NewGameActivity extends Activity {
     /* Server Thread - operates much like the client, however it opens the server socket and
      * waits for connections from a client
      */
-    public class ServerThread implements Runnable {
+    public class ServerThread implements Runnable, Observer {
+
+        /**
+         * Updates when the Panel has been touched
+         * @param o Panel object
+         */
+        public void update(Object o) {
+            p = (Panel) o;
+            if (!p.isPaused()) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        countDown.cancel();
+                        out.println("PAUSE");
+                    }
+                });
+                Log.d("Pause", "Pause sent");
+            } else {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        countDown = new MyCount(timeLeft, 1000);
+                        countDown.start();
+                        out.println("PLAY");
+                    }
+                });
+                Log.d("Pause", "Play sent");
+            }
+        }
+
+        /**
+         * Sends out the game end message
+         * @param user User that lost
+         */
+        public void sendEndGame(String user) {
+            final String result = "GAME END" + user;
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    out.println(result);
+                }
+            });
+        }
+
+        /**
+         * Updates the stats json file and shows a toast message
+         * @param result Result of this game
+         */
+        public void endGame(String result) {
+            Toast.makeText(getApplicationContext(), "YOU " + result, Toast.LENGTH_SHORT).show();
+            Statistic stat = new Statistic(0, 0);
+            // TODO Avi Statistics update
+            // stats.addStatistics(opponent.getMacAddress(), stat);
+            // TODO Avi Statistics write to file
+
+            // Go back to home
+            onStop();
+            intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+        }
+
         public void run() {
             try {
                 if (SERVERIP != null) {
@@ -239,7 +298,6 @@ public class NewGameActivity extends Activity {
                         CLIENTIP = client.getInetAddress().getHostAddress();
                         opponent.setIp(CLIENTIP);
 
-
                         try {
                             /* The main loop where connections happen, only broken if opponent
                              * disconnects or if a 'GAME END' signal is given
@@ -254,103 +312,76 @@ public class NewGameActivity extends Activity {
                                 public void run() {
                                     sent.setText("Connected to " + CLIENTIP);
                                     out.println("Connected to " + SERVERIP);
-                                    out.println("mac " + mac);
                                     countDown.start();
-                                    setContentView(new GameView(getApplicationContext(), myPlayer
-                                            , opponent, 3));
-                                }
-                            });
-
-                            // Sends string across to another phone
-                            // Duplication is necessary
-                            sendButton.setOnClickListener(new View.OnClickListener() {
-                                public void onClick(View v) {
-                                    handler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            out.println(messageField.getText().toString());
-                                            messageField.setText("");
-                                        }
-                                    });
-                                }
-                            });
-
-                            // Enables pause on other phone
-                            // Duplication is necessary
-                            pauseButton.setOnClickListener(new View.OnClickListener() {
-                                public void onClick(View v) {
-                                    handler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            if (paused) {
-                                                countDown = new MyCount(timeLeft, 1000);
-                                                countDown.start();
-                                                paused = false;
-                                                out.println("PLAY");
-                                                sent.setText("Play sent");
-                                                pauseButton.setText("Pause");
-                                            } else {
-                                                countDown.cancel();
-                                                paused = true;
-                                                out.println("PAUSE");
-                                                sent.setText("Pause sent");
-                                                pauseButton.setText("Play");
-                                            }
-                                        }
-                                    });
+                                    setContentView(gv);
                                 }
                             });
 
                             connected = true;
                             while (connected) {
 
-                                line = in.readLine().replaceAll("\\s", "");
+                                line = in.readLine();
 
                                 handler.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        if (line.equals("GAME END")) {
+                                        if (line.startsWith("GAME END")) {
+                                            if (line.startsWith("GAME END me")) {
+                                                endGame("WON");
+                                            } else if (line.startsWith("GAME END you")) {
+                                                endGame("LOST");
+                                            } else {
+                                                endGame("DREW");
+                                            }
                                             connected = false;
-                                        }  else if (line.equals("PAUSE")) {
+                                        } else if (line.startsWith("PAUSE")) {
                                             countDown.cancel();
-                                            sent.setText("Pause received");
-                                            pauseButton.setEnabled(false);
-                                            pauseButton.setText("Paused");
-                                            paused = true;
-                                        } else if (line.equals("PLAY")) {
+                                            gv.getPanel().setPause(!p.isPaused());
+                                            gv.setNoClick(true);
+                                            Log.d("Pause", "Pause received");
+                                        } else if (line.startsWith("PLAY")) {
                                             countDown = new MyCount(timeLeft, 1000);
                                             countDown.start();
-                                            sent.setText("Play received");
-                                            pauseButton.setEnabled(true);
-                                            pauseButton.setText("Pause");
-                                            paused = false;
-                                        } else if (line.startsWith("mac")) {
-                                            opponent.setMacAddress(line.substring(4));
+                                            gv.getPanel().setPause(!p.isPaused());
+                                            gv.setNoClick(false);
+                                            Log.d("Pause", "Play received");
                                         } else if (line.startsWith("{")) {
+                                            String test = null;
                                             try {
                                                 opponent.updatePlayer(line);
+                                                test = opponent.toJSONString();
                                             } catch (JSONException e) {
                                                 e.printStackTrace();
                                             }
+                                            Log.d("json", test);
+                                            // TODO Ships move Avi and James
 
-                                            try {
-                                                countDownText.setText(opponent.toJSONString());
-                                            } catch (JSONException e) {
-                                                e.printStackTrace();
+                                            // check alive
+                                            if (myPlayer.stillHasShips() &&
+                                                    opponent.stillHasShips()) {
+                                                    timeLeft = 10000;
+                                                    countDown = new MyCount(timeLeft, 1000);
+                                                    countDown.start();
+
+                                            } else if (!myPlayer.stillHasShips()) {
+                                                sendEndGame("me");
+                                                endGame("LOST");
+                                            } else if (!opponent.stillHasShips()) {
+                                                sendEndGame("you");
+                                                endGame("WON");
+                                            } else {
+                                                sendEndGame("draw");
+                                                endGame("DREW");
                                             }
-                                        } else {
-                                            countDownText.setText(line);
                                         }
                                     }
                                 });
                             }
+                            // Go back to home
+                            onStop();
+                            intent = new Intent(getApplicationContext(), MainActivity.class);
+                            startActivity(intent);
 
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    out.println("GAME END");
-                                }
-                            });
                             break;
                         } catch (Exception e) {
                             handler.post(new Runnable() {
@@ -401,7 +432,66 @@ public class NewGameActivity extends Activity {
     /* Client thread looks for open server sockets on the given IP address and port
      *
      */
-    public class ClientThread implements Runnable {
+    public class ClientThread implements Runnable, Observer {
+
+        /**
+         * Updates when the Panel has been touched
+         * @param o Panel object
+         */
+        public void update(Object o) {
+            p = (Panel) o;
+            if (!p.isPaused()) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        countDown.cancel();
+                        out.println("PAUSE");
+                    }
+                });
+                Log.d("Pause", "Pause sent");
+            } else {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        countDown = new MyCount(timeLeft, 1000);
+                        countDown.start();
+                        out.println("PLAY");
+                    }
+                });
+                Log.d("Pause", "Play sent");
+            }
+        }
+
+        /**
+         * Sends out the game end message
+         * @param user User that lost
+         */
+        public void sendEndGame(String user) {
+            final String result = "GAME END" + user;
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    out.println(result);
+                }
+            });
+        }
+
+        /**
+         * Updates the stats json file and shows a toast message
+         * @param result Result of this game
+         */
+        public void endGame(String result) {
+            Toast.makeText(getApplicationContext(), "YOU " + result, Toast.LENGTH_SHORT).show();
+            Statistic stat = new Statistic(0, 0);
+            // TODO Avi Statistics update
+            // stats.addStatistics(opponent.getMacAddress(), stat);
+            // TODO Avi Statistics write to file
+
+            // Go back to home
+            onStop();
+            intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+        }
 
         public void run() {
             try {
@@ -413,113 +503,71 @@ public class NewGameActivity extends Activity {
                             new InputStreamReader(socket.getInputStream()));
                     out = new PrintWriter(socket.getOutputStream(), true);
 
-                    // Sends string across to another phone
-                    // Duplication is necessary
-                    sendButton.setOnClickListener(new View.OnClickListener() {
-                        public void onClick(View v) {
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    out.println(messageField.getText().toString());
-                                    messageField.setText("");
-                                }
-                            });
-                        }
-                    });
-
-                    // Enables pause on other phone
-                    // Duplication is necessary
-                    pauseButton.setOnClickListener(new View.OnClickListener() {
-                        public void onClick(View v) {
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (paused) {
-                                        countDown = new MyCount(timeLeft, 1000);
-                                        countDown.start();
-                                        paused = false;
-                                        out.println("PLAY");
-                                        sent.setText("Play sent");
-                                        pauseButton.setText("Pause");
-                                    } else {
-                                        countDown.cancel();
-                                        paused = true;
-                                        out.println("PAUSE");
-                                        sent.setText("Pause sent");
-                                        pauseButton.setText("Play");
-                                    }
-                                }
-                            });
-                        }
-                    });
-
                     connected = true;
                     while (connected) {
-                        line = in.readLine().replaceAll("\\s", "");
+                        line = in.readLine();
 
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                if (line.equals("GAME END")) {
+                                if (line.startsWith("GAME END")) {
+                                    if (line.startsWith("GAME END me")) {
+                                        endGame("WON");
+                                    } else if (line.startsWith("GAME END you")) {
+                                        endGame("LOST");
+                                    } else {
+                                        endGame("DREW");
+                                    }
                                     connected = false;
-                                } else if (line.equals("PAUSE")) {
+                                } else if (line.startsWith("PAUSE")) {
                                     countDown.cancel();
-                                    sent.setText("Pause received");
-                                    pauseButton.setEnabled(false);
-                                    pauseButton.setText("Paused");
-                                    paused = true;
-                                } else if (line.equals("PLAY")) {
+                                    gv.getPanel().setPause(!p.isPaused());
+                                    gv.setNoClick(true);
+                                    Log.d("Pause", "Pause received");
+                                } else if (line.startsWith("PLAY")) {
                                     countDown = new MyCount(timeLeft, 1000);
                                     countDown.start();
-                                    sent.setText("Play received");
-                                    pauseButton.setEnabled(true);
-                                    pauseButton.setText("Pause");
-                                    paused = false;
-                                } else if (line.startsWith("mac")) {
-                                    opponent.setMacAddress(line.substring(4));
-                                    out.println("mac " + mac);
+                                    gv.getPanel().setPause(!p.isPaused());
+                                    gv.setNoClick(false);
+                                    Log.d("Pause", "Play received");
                                 } else if (line.startsWith("{")) {
+                                    String test = null;
                                     try {
                                         opponent.updatePlayer(line);
+                                        test = opponent.toJSONString();
                                     } catch (JSONException e) {
                                         e.printStackTrace();
                                     }
+                                    Log.d("json", test);
+                                    // TODO Ships move Avi and James
 
-                                    try {
-                                        countDownText.setText(opponent.toJSONString());
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                } else {
-                                    if (line.length() > 9 &&
-                                            line.substring(0, 9).equals("Connected")) {
-                                        sent.setText(line);
+                                    // check alive
+                                    if (myPlayer.stillHasShips() &&
+                                            opponent.stillHasShips()) {
+                                        timeLeft = 10000;
+                                        countDown = new MyCount(timeLeft, 1000);
                                         countDown.start();
-                                        setContentView(new GameView(getApplicationContext(),
-                                                myPlayer, opponent, 3));
-                                    } else {
-                                        countDownText.setText(line);
-                                    }
 
+                                    } else if (!myPlayer.stillHasShips()) {
+                                        sendEndGame("me");
+                                        endGame("LOST");
+                                    } else if (!opponent.stillHasShips()) {
+                                        sendEndGame("you");
+                                        endGame("WON");
+                                    } else {
+                                        sendEndGame("draw");
+                                        endGame("DREW");
+                                    }
+                                } else if (line.startsWith("Connected")) {
+                                    sent.setText(line);
+                                    countDown.start();
+                                    setContentView(gv);
                                 }
                             }
                         });
                     }
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            out.println("GAME END");
-                        }
-                    });
 
-                    socket.close();
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            sent.setText("socket closed");
-                        }
-                    });
-                    Log.d("ClientActivity", "C: Closed.");
+                     Log.d("ClientActivity", "Socket closed");
                 } catch (Exception e) {
                     handler.post(new Runnable() {
                         @Override

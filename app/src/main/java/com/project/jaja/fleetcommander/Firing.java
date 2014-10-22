@@ -4,7 +4,7 @@ import android.os.Vibrator;
 
 
 /**
- * Created by James on 8/09/2014.
+ * Created by James McLaren on 8/09/2014.
  */
 public interface Firing {
 
@@ -13,6 +13,5 @@ public interface Firing {
 
     //We also need to be able to calculate whether or not a unit is in shooting range
     public void calculateShootingRange(GameObject target, Vibrator v);
-
 
 }

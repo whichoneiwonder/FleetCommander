@@ -1,5 +1,7 @@
 package com.project.jaja.fleetcommander;
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,8 +46,130 @@ public class Player {
         this.turn = turn;
         this.maxSteps = maxSteps;
         this.shipColour = shipColour;
+        this.fleet = new ArrayList<Ship>();
     }
 
+
+    public void updatePlayerFleet(){
+        for(int i = 0 ; i < getFleet().size(); i++){
+            Log.d("Ship Position", "Fleet Size: " + getFleet().size() + " Ship X " + i + " : " + getFleet().get(i).getXPosition() + " Ship Y "  + i + " : " + getFleet().get(i).getYPosition());
+            if(getFleet().get(i).getHealth() <= 0){
+                getFleet().remove(i);
+                i--;
+            }
+        }
+    }
+    /**
+     * A method that takes in the JSON sent by the other player and then updates
+     * the player's game board with the data
+     * @param jsonData the JSON sent over from the other player
+     * @throws JSONException
+     */
+    public void updatePlayer(String jsonData) throws JSONException {
+
+        JSONObject data = new JSONObject(jsonData);
+
+        //If the max steps is not consistent between players then the game
+        // has been compromised
+        if (data.getInt("maxSteps") != maxSteps) {
+            Log.d("playercheck", "maxSteps changed, system exiting...");
+            System.exit(1);
+        }
+
+        // Checks if correct player IP address has been given
+        if (!data.getString("ip").equals(ip)) {
+            Log.d("playercheck", "player IP address changed, system exiting...");
+            System.exit(1);
+        }
+
+        String mac = data.getString("mac");
+        // Empty mac address - after first turn
+        if (mac.equals("") && turn == 0) {
+            macAddress = mac;
+
+            // Check after every other turn
+        } else if (!mac.equals(macAddress)) {
+            Log.d("playercheck", "player MAC address changed, system exiting...");
+            System.exit(1);
+        }
+
+        // Checks if the correct turn has been given
+        Integer newTurn = data.getInt("turn");
+        if (newTurn != turn + 1) {
+            Log.d("playercheck", "Turn " + newTurn.toString() + " has been given, instead of " +
+                    Integer.toString(turn + 1) + ". System exiting...");
+            System.exit(1);
+        } else {
+            turn = newTurn;
+        }
+
+        JSONArray ships = data.getJSONArray("ships");
+
+        // Make sure no extra ships are added in
+        int maxShips = Math.min(ships.length(), 3);
+
+        for (int i = 0; i < maxShips; i++) {
+            JSONObject shipJSON = ships.getJSONObject(i);
+            JSONObject path = shipJSON.getJSONObject("path");
+
+            //Retrieving the ship in question from the existing fleet
+            Ship ship = fleet.get(i);
+
+            ship.setHealth(shipJSON.getInt("health"));
+
+            //Adding the x and y coordinates from the json path arrays to the ships
+            JSONArray xCoords = path.getJSONArray("xCoordsPath");
+            JSONArray yCoords = path.getJSONArray("yCoordsPath");
+
+            //Both JSON arrays should have the same length as we cannot have an x coord
+            //without a y coord
+            for(int j = 0; j < xCoords.length(); j++ ){
+                ship.addxCoord(xCoords.getInt(j));
+                ship.addyCoord(yCoords.getInt(j));
+            }
+
+        }
+    }
+
+    /*
+        Converts all the necessary data about the player into JSON so that it may
+        be sent to their opponent for processing
+     */
+    public String toJSONString() throws JSONException {
+        JSONObject data = new JSONObject();
+        //The player's IP address
+        data.put("ip", ip);
+        //The player's MAC address
+        data.put("mac", macAddress);
+        //Which turn number the player is on, this is used to ensure that the correct data
+        //has been recieved
+        data.put("turn", turn);
+        //The number of steps that the player is allowed to make (ie how far their
+        //ship can move in a single turn)
+        data.put("maxSteps", maxSteps);
+
+        JSONArray ships = new JSONArray();
+        for (Ship ship: fleet) {
+            JSONObject shipJSON = new JSONObject();
+            shipJSON.put("health", ship.getHealth());
+
+            //This allows us to have reference to the path that
+            //the user has drawn for that ship
+            JSONObject pathJSON = new JSONObject();
+            pathJSON.put("xCoordsPath", ship.getxCoords());
+            pathJSON.put("yCoordsPath", ship.getyCoords());
+            shipJSON.put("path", pathJSON);
+            ships.put(shipJSON);
+        }
+
+        data.put("ships", ships);
+
+        return data.toString();
+    }
+
+    //=============================================================================================
+    //                          ACCESSOR AND MUTATOR METHODS
+    //=============================================================================================
 
     public String getIp() {
         return ip;
@@ -95,122 +219,15 @@ public class Player {
         this.fleet.remove(deadShip);
     }
 
-    public void updatePlayer(String jsonData) throws JSONException {
-        JSONObject data = new JSONObject(jsonData);
-
-        if (data.getInt("maxSteps") != maxSteps) {
-            System.out.println("maxSteps changed, system exiting...");
-            System.exit(1);
-        }
-
-        // Checks if correct player IP address has been given
-        if (!data.getString("ip").equals(ip)) {
-            System.out.println("player IP address changed, system exiting...");
-            System.exit(1);
-        }
-
-        if (!data.getString("mac").equals(macAddress)) {
-            System.out.println("player MAC address changed, system exiting...");
-            System.exit(1);
-        }
-
-        // Checks if the correct turn has been given
-        Integer newTurn = data.getInt("turn");
-        if (newTurn != turn + 1) {
-            System.out.println("Turn " + newTurn.toString() + " has been given, instead of " +
-                    Integer.toString(turn + 1) + ". System exiting...");
-            System.exit(1);
-        } else {
-            turn = newTurn;
-        }
-
-        JSONArray ships = data.getJSONArray("ships");
-
-        // Make sure no extra ships are added in
-        int maxShips = Math.min(ships.length(), 3);
-
-        for (int i = 0; i < maxShips; i++) {
-            JSONObject shipJSON = ships.getJSONObject(i);
-            JSONObject location = shipJSON.getJSONObject("loc");
-            JSONObject path = shipJSON.getJSONObject("path");
-
-            Ship ship = fleet.get(i);
-
-            //Removing this for now, seeing if we can get the ship to follow the path
-            //that it is passed
-            //Location loc = new Location(location.getInt("x"), location.getInt("y"));
-            //ship.setLoc(loc);
-            ship.setDir(shipJSON.getInt("dir"));
-            ship.setHealth(shipJSON.getInt("health"));
-
-            //Adding the x and y coordinates from the json path arrays to the ships
-            JSONArray xCoords = path.getJSONArray("xCoordsPath");
-            JSONArray yCoords = path.getJSONArray("yCoordsPath");
-
-            //Both JSON arrays should have the same length as we cannot have an x coord
-            //without a y coord
-            for(int j = 0; j < xCoords.length(); j++ ){
-                ship.addxCoord(xCoords.getInt(j));
-                ship.addyCoord(yCoords.getInt(j));
-            }
-
-
-            JSONArray directionsJSON = shipJSON.getJSONArray("dir_list");
-            ArrayList<Integer> directionList = new ArrayList<Integer>();
-
-            if (directionsJSON != null) {
-                int len = directionsJSON.length();
-
-                for (int j = 0; i < len; i++){
-                    directionList.add(directionsJSON.getInt(j));
-                }
-            }
-
-            ship.setDirectionList(directionList);
-        }
-    }
-
-    public String toJSONString() throws JSONException {
-        JSONObject data = new JSONObject();
-        data.put("ip", ip);
-        data.put("mac", macAddress);
-        data.put("turn", turn);
-        data.put("maxSteps", maxSteps);
-
-        JSONArray ships = new JSONArray();
-        for (Ship ship: fleet) {
-            JSONObject shipJSON = new JSONObject();
-            shipJSON.put("health", ship.getHealth());
-
-            Location loc = ship.getLoc();
-            JSONObject locJSON = new JSONObject();
-            locJSON.put("x", loc.getX());
-            locJSON.put("y", loc.getY());
-            shipJSON.put("loc", locJSON);
-
-            //This allows us to have reference to the path that
-            //the user has drawn for that ship
-            JSONObject pathJSON = new JSONObject();
-            pathJSON.put("xCoordsPath", ship.getxCoords());
-            pathJSON.put("yCoordsPath", ship.getyCoords());
-            shipJSON.put("path", pathJSON);
-
-            shipJSON.put("dir", ship.getDir());
-            ArrayList<Integer> dirList = ship.getDirectionList();
-            JSONArray dirJSON = new JSONArray();
-            for (int one_dir: dirList) {
-                dirJSON.put(one_dir);
-            }
-            shipJSON.put("dir_list", dirJSON);
-            ships.put(shipJSON);
-        }
-
-        data.put("ships", ships);
-
-        return data.toString();
-    }
-
     public String getShipColour(){
         return shipColour;
+    }
+
+    /*
+    A simple method used to determine whether or not the player still has any ships left
+    in their fleet. If they do, then they may continue playing. If not, then they lose
+     */
+    public boolean stillHasShips(){
+        return this.getFleet().size() > 0;
     }
 }

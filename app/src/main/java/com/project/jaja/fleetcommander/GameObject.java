@@ -8,12 +8,22 @@ import java.util.ArrayList;
 
 /**
  * Created by anty and James on 5/09/14.
+ * This class represents the fundamental behaviour of an object in the game.
+ * While it has only been used to represent a ship, had our stretch goal of animated
+ * cannonballs been reached then it would have been used for that as well
  */
 public class GameObject{
+
+    //The GameObjects current location
     private Location loc;
+
+    //The direction that the game object is facing
     private int dir;
+
+    //The GameObjects current health (0 represents dead)
     public int health;
-    private ArrayList<Integer> directionList;
+
+    protected String color;
 
     //the bitmap image of the sprite itself:
     public Bitmap map;
@@ -27,23 +37,26 @@ public class GameObject{
 
     //position X and Y Values
     public int xPosition;
-
-    public int getyPosition() {
-        return yPosition;
-    }
-
-    public int getxPosition() {
-        return xPosition;
-    }
-
     public int yPosition;
 
+
+    /**
+     * The standard constuctor for a gameObject
+     * @param loc The location at which the object will first be created
+     * @param dir The direction that the created object will be facing
+     * @param maxSteps The maximum number of grid spaces this object can traverse in a single
+     *                 turn
+     * @param health The starting health of the gameObject
+     */
     public GameObject(Location loc, int dir, int maxSteps, int health) {
         this.loc = loc;
         this.dir = dir;
         this.health = health;
     }
 
+    /**
+     * The default constructor for a GameObject
+     */
     public GameObject(){
 
     }
@@ -63,48 +76,75 @@ public class GameObject{
 
 
     /**
-     * A method that determines whether this gameobject is colliding with the one being
+     * A method that determines whether this gameObject is colliding with the one being
      * passed in
      * @param testObject the object we are checking for collision
-     * @return returns true if collision is occuring
+     * @param v A reference to the android vibrator. This allows us to provide the player with
+     *          haptic feedback when collision occurs
+     * @return returns true if collision is occurring
      */
     public boolean detectCollision(GameObject testObject, Vibrator v){
 
-        Log.d("Collision detection", "detectionCollision() is being called");
+        //We first need to determine the X and Y positions of the testObject
         int enemyX = testObject.getxPosition();
         int enemyY  = testObject.getyPosition();
 
+
+        //From these X and Y coordinates we then need to map them to a section of the grid.
+        //With this mapped grid value we can compare it to the mapped grid value of this gameObject
+        //to see whether they are occupying the same grid space. If they are then we say that they
+        //are colliding
         if(gameView.getMappedScreenX(enemyX) == gameView.getMappedScreenX(xPosition) &&
-            gameView.getMappedScreenY(enemyY) == gameView.getMappedScreenY(yPosition) ){//Damage dealing logic
-            Log.d("Collision detection","Two Ships are colliding");
-            v.vibrate(2000);
-            //We deal different ammounts of damage based on what type of collision it is
+            gameView.getMappedScreenY(enemyY) == gameView.getMappedScreenY(yPosition) ){
+            v.vibrate(100);
+            //Given that we deal different amounts of damaged based on what type of collision is
+            //occuring, we need to examine the directions of the ships so that we can determine
+            //exactly what type of collision has occured.
+
+            //We first check whether the game object that has been passed in is a ship.
+            //While this will always be true for this iteration of the product, it will allow
+            //us to easily extend the collision logic to accomodate for cannonballs when they are
+            //introduced in version 2
             if(testObject instanceof Ship){
                 int enemyDirection = ((Ship) testObject).getDirection();
                 int playerDirection = ((Ship) this).getDirection();
 
-                //Case 1: Head on collision
+                //Case 1: Head on collision, detected by the fact that the two players are facing
+                //complete opposite directions. In this case both players take the the opponents
+                //health as damage. Meaning that whichever player has the highest health will survive
+                //the collision
                 if(Math.abs(enemyDirection - playerDirection) == 4){
                     this.decreaseHealth(testObject.getHealth());
                     testObject.decreaseHealth(this.getHealth());
                 }
 
-                //Case 2: Rear end
+                //Case 2: Rear end, detected by the fact that the two players are facing the same
+                //direction. In the case of rear-ending the player that got rear-ended is killed
+                //while the player that did the rear-ending doesn't take any damage
                 else if(enemyDirection == playerDirection){
                     switch(playerDirection){
-                        //Both ships are facing up, object with smaller y does damage
-                        case 0:
-                            if(yPosition < enemyY){
-                                testObject.kill();
-                            } else{
-                                this.kill();
-                            }
+                        //Because we need to figure out who did the rear-ending and who was rear-
+                        //ended we need to examine the players directions so we can figure out how
+                        //to determine this. For example, if both players are facing right, eg:
+                        // Ship A -->     Ship B -->
+                        //We can figure out which ship is ship A by comparing their x coordinates.
+                        //The ship with the small x coordinate will be to the left of the other ship
+                        //and thus will be the one rear-ending the other ship.
+
+
                         //Both ships are facing right, smaller x does damage
-                        case 1:
+                        case 0:
                             if(xPosition < enemyX){
                                 testObject.kill();
                             } else{
                                 this.kill();
+                            }
+                        //Both ships are facing down right, ship with the larger y
+                        case 1:
+                            if(yPosition < enemyY){
+                                this.kill();
+                            } else{
+                                testObject.kill();
                             }
                         //Both ships are facing down, larger y does damage
                         case 2:
@@ -113,29 +153,61 @@ public class GameObject{
                             } else{
                                 testObject.kill();
                             }
-                        //Both ships are facing right, larger x does damage
+                        //Both ships facing down right, larger y does damage
                         case 3:
+                            if(yPosition < enemyY){
+                                this.kill();
+                            } else{
+                                testObject.kill();
+                            }
+                        //Both ships are facing left, larger x does damage
+                        case 4:
                             if(xPosition < enemyX){
                                 this.kill();
                             } else {
                                 testObject.kill();
                             }
-                    }
-                }
-                //Case 3: One ship must be T-boning the other
-                else{
-                    switch(playerDirection){
-                        //Player is facing up, thus if the enemy y is greater than
-                        //the player y we know that the player is t-boning the enemy
+                        //Both ships are facing up, ship with smaller y does damage
+                        case 5:
+                            if(yPosition < enemyY){
+                                testObject.kill();
+                            } else{
+                                this.kill();
+                            }
+                        //Both ships are facing up, object with smaller y does damage
                         case 6:
                             if(yPosition < enemyY){
                                 testObject.kill();
                             } else{
                                 this.kill();
                             }
-                        //Player is facing left, we can just reverse the condition above
-                        case 4:
+                        //Both ships are facing up right, smaller y does damage
+                        case 7:
                             if(yPosition < enemyY){
+                                testObject.kill();
+                            } else{
+                                this.kill();
+                            }
+                    }
+                }
+                //Case 3: One ship must be T-boning the other. Similar to how rear-ending was dealt
+                //with, the player that is being rear-ended is killed and the player that did the
+                //rear-ending takes no damage. The way that we figure out which player played
+                //which roles is achieved in the exact same fashion to rear-ending except the
+                //directions are different.
+                else{
+                    switch(playerDirection){
+
+                        //Player is facing right, same as left
+                        case 0:
+                            if(yPosition < enemyY){
+                                testObject.kill();
+                            } else{
+                                this.kill();
+                            }
+                        //Player is facing down right, if the enemy has a smaller y or a larger x
+                        case 1:
+                            if(yPosition > enemyY || xPosition < enemyX){
                                 testObject.kill();
                             } else{
                                 this.kill();
@@ -148,9 +220,39 @@ public class GameObject{
                             } else{
                                 testObject.kill();
                             }
-                        //Player is facing right, same as left
-                        case 0:
+
+                        //Player is facing down-left, player with the smaller y or smaller x
+                        case 3:
+                            if(yPosition > enemyY || xPosition > enemyX){
+                                testObject.kill();
+                            } else{
+                                this.kill();
+                            }
+                        //Player is facing left, larger y
+                        case 4:
                             if(yPosition < enemyY){
+                                testObject.kill();
+                            } else{
+                                this.kill();
+                            }
+                        //Player is facing up left, smaller x or larger y
+                        case 5:
+                            if(xPosition > enemyX || yPosition < enemyY){
+                                testObject.kill();
+                            } else{
+                                this.kill();
+                            }
+                        //Player is facing up, thus if the enemy y is greater than
+                        //the player y we know that the player is t-boning the enemy
+                        case 6:
+                            if(yPosition < enemyY){
+                                testObject.kill();
+                            } else{
+                                this.kill();
+                            }
+                        //Player is facing up right, larger x or larger y takes damage
+                        case 7:
+                            if(yPosition < enemyY || xPosition < enemyX){
                                 testObject.kill();
                             } else{
                                 this.kill();
@@ -158,8 +260,6 @@ public class GameObject{
                     }
 
                 }
-
-
 
             }
             return true;
@@ -176,6 +276,14 @@ public class GameObject{
         return true;
     }
 
+    public int getyPosition() {
+        return yPosition;
+    }
+
+    public int getxPosition() {
+        return xPosition;
+    }
+
     public Location getLoc() {
         return loc;
     }
@@ -186,14 +294,6 @@ public class GameObject{
 
     public int getHealth() {
         return health;
-    }
-
-    public ArrayList<Integer> getDirectionList() {
-        return directionList;
-    }
-
-    public void setDirectionList(ArrayList<Integer> directionList) {
-        this.directionList = directionList;
     }
 
     public void setLoc(Location loc) {
@@ -217,6 +317,14 @@ public class GameObject{
     }
 
     public void kill(){
-        this.health = 0;
+        this.health = -1;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 }

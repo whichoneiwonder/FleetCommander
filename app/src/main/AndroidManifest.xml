@@ -11,7 +11,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:icon="@drawable/ship_icon"
@@ -39,15 +39,15 @@
             android:label="@string/title_activity_new_game"
             android:screenOrientation="portrait" >
         </activity>
-        <activity
-            android:name=".PlayActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_play"
-            android:theme="@style/FullscreenTheme" >
-        </activity>
+
         <activity
             android:name=".StatisticsActivity"
             android:label="@string/title_activity_statistics" >
+        </activity>
+        <activity
+            android:name=".TestActivity"
+            android:label="@string/title_activity_test"
+            android:screenOrientation="portrait" >
         </activity>
     </application>
 
