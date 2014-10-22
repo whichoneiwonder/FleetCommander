@@ -84,7 +84,7 @@ public class Player {
 
         String mac = data.getString("mac");
         // Empty mac address - after first turn
-        if (mac.equals("") && turn == 0) {
+        if (turn == 0) {
             macAddress = mac;
 
             // Check after every other turn
@@ -115,16 +115,13 @@ public class Player {
             ship.setHealth(shipJSON.getInt("health"));
 
             //Adding the x and y coordinates from the json path arrays to the ships
-            JSONArray xCoords = path.getJSONArray("xCoordsPath");
-            JSONArray yCoords = path.getJSONArray("yCoordsPath");
+            JSONArray xJSON = path.getJSONArray("xCoordsPath");
+            JSONArray yJSON = path.getJSONArray("yCoordsPath");
 
-            //Both JSON arrays should have the same length as we cannot have an x coord
-            //without a y coord
-            for(int j = 0; j < xCoords.length(); j++ ){
-                ship.addxCoord(xCoords.getInt(j));
-                ship.addyCoord(yCoords.getInt(j));
+            for (int j = 0; j < xJSON.length(); j++) {
+                ship.addxCoord(xJSON.getInt(j));
+                ship.addyCoord(yJSON.getInt(j));
             }
-
         }
     }
 
@@ -153,8 +150,10 @@ public class Player {
             //This allows us to have reference to the path that
             //the user has drawn for that ship
             JSONObject pathJSON = new JSONObject();
-            pathJSON.put("xCoordsPath", ship.getxCoords());
-            pathJSON.put("yCoordsPath", ship.getyCoords());
+            JSONArray xJSON = new JSONArray(ship.getxCoords());
+            JSONArray yJSON = new JSONArray(ship.getyCoords());
+            pathJSON.put("xCoordsPath", xJSON);
+            pathJSON.put("yCoordsPath", yJSON);
             shipJSON.put("path", pathJSON);
             ships.put(shipJSON);
         }
@@ -162,6 +161,19 @@ public class Player {
         data.put("ships", ships);
 
         return data.toString();
+    }
+
+    public int getScore() {
+        int score = 0;
+        int count = 0;
+        for (Ship ship: fleet) {
+            score += 100 - ship.getHealth();
+            count++;
+        }
+
+        score += (count - 3) * 100;
+
+        return score;
     }
 
     //=============================================================================================
