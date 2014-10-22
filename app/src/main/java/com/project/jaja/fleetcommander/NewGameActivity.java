@@ -380,6 +380,10 @@ public class NewGameActivity extends Activity {
                                                 Log.d("json", test);
 
                                                 //TODO draw line and move ships
+                                                while(gv.movesLeft()){
+                                                    gv.update();
+                                                }
+
 
                                                 // check alive
                                                 if (myPlayer.stillHasShips() &&
@@ -574,6 +578,9 @@ public class NewGameActivity extends Activity {
                                         }
                                         Log.d("json", test);
                                         //TODO draw line and move ships
+                                        while(gv.movesLeft()){
+                                            gv.update();
+                                        }
 
                                         p.setEnemyScore(myPlayer.getScore());
                                         p.setMyScore(opponent.getScore());

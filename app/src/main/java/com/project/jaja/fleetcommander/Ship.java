@@ -150,8 +150,6 @@ public class Ship extends GameObject implements Movable, Firing {
         int centreX = xPosition + map.getWidth()/2;
         int centreY = yPosition + map.getHeight()/2;
 
-        //We need to make sure that the ship has not collided with the edge of the screen
-        checkEdges();
         // move the ship by increments of its speed
         // amd update path to draw
         if(xCoords.size() > 0) {
@@ -162,16 +160,18 @@ public class Ship extends GameObject implements Movable, Firing {
 
             //add a line to each waypoint
             for ( int i = 0; i< xCoords.size(); i++){
-                path.lineTo(xCoords.get(i), yCoords.get(i));
+                path.lineTo(gameView.getScreenXFromGridX(xCoords.get(i)), gameView.getScreenYFromGridY(yCoords.get(i)));
             }
+            int firstScreenX = gameView.getScreenXFromGridX((xCoords.get(0)));
+            int firstScreenY = gameView.getScreenYFromGridY((yCoords.get(0)));
 
-            calculateNextSpeed(xCoords.get(0), yCoords.get(0), centreX, centreY);
+            calculateNextSpeed(firstScreenX, firstScreenY, centreX, centreY);
             xPosition = xPosition + xSpeed;
             yPosition = yPosition + ySpeed;
 
             //If the ship is at the next point referenced in the xCoords and yCoords arraylist
             //then we no longer need to keep track of that coordinate
-            if(Math.abs(centreX - xCoords.get(0)) <1 && Math.abs(centreY - yCoords.get(0)) <1){
+            if(Math.abs(centreX - firstScreenX) <1 && Math.abs(centreY - firstScreenY) <1){
                xCoords.remove(0);
                yCoords.remove(0);
             }
@@ -264,15 +264,17 @@ public class Ship extends GameObject implements Movable, Firing {
         //ignore if it's not a move action
 
 
-        if(event.getAction()!= MotionEvent.ACTION_MOVE){
+        if(xCoords.size()>10 ||event.getAction()!= MotionEvent.ACTION_MOVE){
             return;
         }
-        int screenX = gameView.getMappedScreenX((int) event.getX());
-        int screenY = gameView.getMappedScreenY((int) event.getY());
+
         //append the new coordinates to the path
 
-        xCoords.add(screenX);
-        yCoords.add(screenY);
+        int gridX = gameView.getGridXFromScreenX((int) event.getX());
+        int gridY = gameView.getGridYFromScreenY((int) event.getY());
+
+        xCoords.add(gridX);
+        yCoords.add(gridY);
 
 
     }
@@ -298,9 +300,19 @@ public class Ship extends GameObject implements Movable, Firing {
         paint.setStyle(Paint.Style.STROKE );
 
         //draw the ship's path
+
+        path = new Path();
+        path.moveTo(xPosition + (map.getWidth() / 2),
+                yPosition + (map.getHeight() / 2));
+
+        //add a line to each waypoint
+        for ( int i = 0; i< xCoords.size(); i++){
+            path.lineTo(gameView.getScreenXFromGridX(xCoords.get(i)), gameView.getScreenYFromGridY(yCoords.get(i)));
+        }
+
         canvas.drawPath(path,paint);
 
-        update();
+
         //calculate what rotation the ship is from due right
         float rotationDegrees = (direction*  -45);
         //save the orientation of the canvas

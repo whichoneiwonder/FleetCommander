@@ -54,8 +54,9 @@ public class Player {
         for(int i = 0 ; i < getFleet().size(); i++){
             Log.d("Ship Position", "Fleet Size: " + getFleet().size() + " Ship X " + i + " : " + getFleet().get(i).getXPosition() + " Ship Y "  + i + " : " + getFleet().get(i).getYPosition());
             if(getFleet().get(i).getHealth() <= 0){
-                getFleet().remove(i);
-                i--;
+                //getFleet().remove(i);
+                //i--;
+                getFleet().get(i).setHealth(0);
             }
         }
     }
@@ -237,6 +238,11 @@ public class Player {
     in their fleet. If they do, then they may continue playing. If not, then they lose
      */
     public boolean stillHasShips(){
-        return this.getFleet().size() > 0;
+        for(Ship ship : fleet){
+            if(ship.getHealth() > 0){
+                return true;
+            }
+        }
+        return false;
     }
 }

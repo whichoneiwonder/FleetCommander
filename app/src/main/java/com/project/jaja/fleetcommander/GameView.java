@@ -277,6 +277,43 @@ public class GameView extends SurfaceView {
         return false;
     }
 
+    protected void update(){
+        me.updatePlayerFleet();
+        enemy.updatePlayerFleet();
+
+        ArrayList<GameObject> allShips = new ArrayList<GameObject>();
+        allShips.addAll(me.getFleet());
+        allShips.addAll(enemy.getFleet());
+
+        for(int i = 0; i < allShips.size(); i++) {
+
+            Ship ship = (Ship) allShips.get(i);
+            if(ship.getHealth() > 0) {
+                ship.update();
+            }
+        }
+
+    }
+
+    public boolean movesLeft(){
+        me.updatePlayerFleet();
+        enemy.updatePlayerFleet();
+
+        ArrayList<GameObject> allShips = new ArrayList<GameObject>();
+        allShips.addAll(me.getFleet());
+        allShips.addAll(enemy.getFleet());
+
+        for(int i = 0; i < allShips.size(); i++) {
+
+            Ship ship = (Ship) allShips.get(i);
+            if(ship.getHealth() > 0 && ship.getxCoords().size() > 0){
+                return true;
+            }
+        }
+
+        return false;
+
+    }
 
     /**
      * Handles all the rendering of the view
@@ -298,28 +335,34 @@ public class GameView extends SurfaceView {
         ArrayList<GameObject> allShips = new ArrayList<GameObject>();
         allShips.addAll(me.getFleet());
         allShips.addAll(enemy.getFleet());
-        for(int i = 0; i < allShips.size(); i++){
+        for(int i = 0; i < allShips.size(); i++) {
 
             Ship ship = (Ship) allShips.get(i);
 
+            if (ship.getHealth() > 0) {
+                int resourceID = ship.getDirectionID();
+                //sets the image of the ship to the specified image
+                ship.setMap(BitmapFactory.decodeResource(getResources(), resourceID));
+                //if(canMove && (ship.getXCoords().size() > 0 || ship.getYCoords().size() > 0))
+                //ship.update();
+                ship.onDraw(canvas);
 
-            int resourceID = ship.getDirectionID();
-            //sets the image of the ship to the specified image
-            ship.setMap(BitmapFactory.decodeResource(getResources(), resourceID));
-            ship.onDraw(canvas);
+                //This will eventually be looping through all GameObjects, not just ships
 
-            //This will eventually be looping through all GameObjects, not just ships
+                for (int j = 0; j < allShips.size(); j++) {
+                    Ship otherShip = null;
+                    if (i != j) {
+                        otherShip = (Ship) allShips.get(j);
+                        if(otherShip.getHealth() <= 0){
+                            otherShip = null;
+                        }
+                    }
 
-            for(int j = 0; j < allShips.size(); j++) {
-                Ship otherShip = null;
-                if(i != j) {
-                    otherShip = (Ship) allShips.get(j);
+                    if (otherShip != null && otherShip.stillAlive()) {
+                        ship.detectCollision(otherShip, v);
+                    }
+
                 }
-
-                if (otherShip != null && otherShip.stillAlive()) {
-                    ship.detectCollision(otherShip, v);
-                }
-
             }
         }
     }
