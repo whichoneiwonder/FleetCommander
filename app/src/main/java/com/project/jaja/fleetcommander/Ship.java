@@ -8,8 +8,9 @@ import android.graphics.Path;
 import android.view.MotionEvent;
 
 import java.util.ArrayList;
-import java.util.Random;
+import android.os.Vibrator;
 import android.util.Log;
+
 /**
  * A class representing the ships that are actually drawn in game
  * Created by avnishjain and jmcma on 19/09/14.
@@ -48,6 +49,7 @@ public class Ship extends GameObject implements Movable, Firing {
     public final static int UP = 6;
     public final static int UPRIGHT = 7;
 
+    public final static int SHOOTING_DAMAGE = 25;
 
     /**ShipSprite Constructor for specifying all but speed
      *
@@ -345,8 +347,9 @@ public class Ship extends GameObject implements Movable, Firing {
 
     //Methods implemented from the Firing interface
     @Override
-    public void shoot(){
-
+    public void shoot(GameObject target, Vibrator v){
+        target.decreaseHealth(SHOOTING_DAMAGE);
+        v.vibrate(100);
     }
 
     /**
@@ -355,26 +358,35 @@ public class Ship extends GameObject implements Movable, Firing {
      * @return true if the object is in shooting range
      */
     @Override
-    public boolean calculateShootingRange(GameObject target){
+    public void calculateShootingRange(GameObject target, Vibrator v){
 
-        //We first need to calculate the distance between the current ship and the target
-        Location targetLoc = target.getLoc();
-        Location userLoc = this.getLoc();
+        //We first figure out which gridspaces the player and enemy ships occupy
+        int playerX = gameView.getMappedScreenX(xPosition);
+        int playerY = gameView.getMappedScreenY(yPosition);
 
-        double xDistance = targetLoc.getX() - userLoc.getX();
-        double yDistance = targetLoc.getY() - userLoc.getY();
+        int enemyX = gameView.getMappedScreenX(target.getxPosition());
+        int enemyY  = gameView.getMappedScreenY(target.getyPosition());
 
-        //We also need to calculate whether or not the ship lies within the firing cones
-        double angleBetween = Math.toDegrees(Math.atan2(yDistance, xDistance));
+        //Then we calculate how many grid spaces they are apart
+        double xDistance = Math.abs(playerX - enemyX);
+        double yDistance = Math.abs(playerY - enemyY);
 
-        if(angleBetween == 0 )
-            if(true){
-                return true;
-            } else{
-                return false;
+        //Now we look at the direction of the ship to calculate what the distance must
+        //be for the enemy ship to be in range
+        if(this.direction == 0 || this.direction == 4){
+            //Ship is facing left or right, thus we want large y small x
+            if(yDistance < 10 && xDistance < 3){
+                Log.d("Shooting", "Something is being shot");
+                shoot(target, v);
+            }
+        } else if(this.direction == 2 || this.direction == 6){
+            //Ship is facing up or down, thus we want large x and small y
+            if(xDistance < 10 && yDistance < 3){
+                Log.d("Shooting", "Something is being shot");
+                shoot(target, v);
             }
 
-        return false;
+        }
 
     }
 

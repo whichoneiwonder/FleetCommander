@@ -113,7 +113,7 @@ public class GameObject{
                 //complete opposite directions. In this case both players take the the opponents
                 //health as damage. Meaning that whichever player has the highest health will survive
                 //the collision
-                if(Math.abs(enemyDirection - playerDirection) == 2){
+                if(Math.abs(enemyDirection - playerDirection) == 4){
                     this.decreaseHealth(testObject.getHealth());
                     testObject.decreaseHealth(this.getHealth());
                 }
@@ -197,6 +197,7 @@ public class GameObject{
                 //directions are different.
                 else{
                     switch(playerDirection){
+
                         //Player is facing right, same as left
                         case 0:
                             if(yPosition < enemyY){
@@ -219,6 +220,7 @@ public class GameObject{
                             } else{
                                 testObject.kill();
                             }
+
                         //Player is facing down-left, player with the smaller y or smaller x
                         case 3:
                             if(yPosition > enemyY || xPosition > enemyX){
