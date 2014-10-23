@@ -8,7 +8,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.os.Vibrator;
-import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -86,6 +85,8 @@ public class GameView extends SurfaceView {
     //Keeping track of whether or not a click has occured
     private boolean noClick = false;
 
+    private boolean roundEnd;
+
     /**
      * Constructor of the view
      * @param context -> Context of the game which comes from NewGameActivity
@@ -97,6 +98,8 @@ public class GameView extends SurfaceView {
      */
     public GameView(Context context, Player me, Player enemy, int numShipsInGame){
         super(context);
+
+        roundEnd = false;
 
         //Creates the thread
         thread = new GameLoopThread(this);
@@ -189,7 +192,9 @@ public class GameView extends SurfaceView {
 
     }
 
-
+    public void setRoundEnd(boolean roundEnd) {
+        this.roundEnd = roundEnd;
+    }
 
     /**
      *  Method call that populates the ArrayList.
@@ -470,7 +475,7 @@ public class GameView extends SurfaceView {
 
         }
 
-        if (!panel.isPaused()) {
+        if (!panel.isPaused() || !roundEnd) {
             //if this is the first part of a touch event
             if (event.getAction() == event.ACTION_DOWN) {
 
@@ -497,7 +502,7 @@ public class GameView extends SurfaceView {
                 //reset the path
                 if (shipReceivingInput != null) {
 
-                    shipReceivingInput.clearAllButHead();
+                    shipReceivingInput.clearPath();
                     //indicate selection
                     shipReceivingInput.setShipSelect(true);
                 }

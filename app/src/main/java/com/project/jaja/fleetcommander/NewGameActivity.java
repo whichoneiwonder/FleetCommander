@@ -105,6 +105,8 @@ public class NewGameActivity extends Activity {
     // Statistics for this Player
     private Statistics stats;
 
+    private boolean inReceived = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -217,6 +219,9 @@ public class NewGameActivity extends Activity {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    inReceived = false;
+                    p.setTimeLeft(0);
+                    gv.setRoundEnd(true);
                     myPlayer.setTurn(myPlayer.getTurn() + 1);
                     try {
                         out.println(myPlayer.toJSONString());
@@ -350,7 +355,32 @@ public class NewGameActivity extends Activity {
                                     @Override
                                     public void run() {
                                         if (line != null) {
-                                            if (line.startsWith("GAME END")) {
+                                            if (line.startsWith("yolo")) {
+                                                p.setEnemyScore(myPlayer.getScore());
+                                                p.setMyScore(opponent.getScore());
+
+                                                // check alive
+                                                if (myPlayer.stillHasShips() &&
+                                                        opponent.stillHasShips()) {
+                                                    timeLeft = 10000;
+                                                    countDown = new MyCount(timeLeft, 1000);
+                                                    countDown.start();
+                                                    gv.setRoundEnd(false);
+
+                                                } else if (!myPlayer.stillHasShips()) {
+                                                    sendEndGame("me");
+                                                    endGame("LOST");
+                                                } else if (!opponent.stillHasShips()) {
+                                                    sendEndGame("you");
+                                                    endGame("WON");
+                                                } else {
+                                                    sendEndGame("draw");
+                                                    endGame("DREW");
+                                                }
+
+                                            } else if (line.startsWith("ack")) {
+                                                inReceived = true;
+                                            } else if (line.startsWith("GAME END")) {
                                                 if (line.startsWith("GAME END me")) {
                                                     endGame("WON");
                                                 } else if (line.startsWith("GAME END you")) {
@@ -378,30 +408,15 @@ public class NewGameActivity extends Activity {
                                                     e.printStackTrace();
                                                 }
                                                 Log.d("json", test);
-
+                                                long timeTillLastStep = System.currentTimeMillis();
                                                 //TODO draw line and move ships
-                                                while(gv.movesLeft()){
-                                                    gv.update();
+                                                while(gv.movesLeft()) {
+                                                    if (System.currentTimeMillis() - timeTillLastStep >= 10){
+                                                        gv.update();
+                                                        timeTillLastStep = System.currentTimeMillis();
+                                                    }
                                                 }
-
-
-                                                // check alive
-                                                if (myPlayer.stillHasShips() &&
-                                                        opponent.stillHasShips()) {
-                                                    timeLeft = 10000;
-                                                    countDown = new MyCount(timeLeft, 1000);
-                                                    countDown.start();
-
-                                                } else if (!myPlayer.stillHasShips()) {
-                                                    sendEndGame("me");
-                                                    endGame("LOST");
-                                                } else if (!opponent.stillHasShips()) {
-                                                    sendEndGame("you");
-                                                    endGame("WON");
-                                                } else {
-                                                    sendEndGame("draw");
-                                                    endGame("DREW");
-                                                }
+                                                out.println("yolo");
                                             }
                                         }
                                     }
@@ -461,6 +476,7 @@ public class NewGameActivity extends Activity {
      *
      */
     public class ClientThread implements Runnable, Observer {
+        private boolean isFinished = false;
 
         /**
          * Updates when the Panel has been touched
@@ -548,7 +564,30 @@ public class NewGameActivity extends Activity {
                             @Override
                             public void run() {
                                 if (line != null) {
-                                    if (line.startsWith("GAME END")) {
+                                    if (line.startsWith("yolo")) {
+                                        out.println("yolo");
+
+                                        p.setEnemyScore(myPlayer.getScore());
+                                        p.setMyScore(opponent.getScore());
+
+                                        if (myPlayer.stillHasShips() &&
+                                                opponent.stillHasShips()) {
+                                            timeLeft = 10000;
+                                            countDown = new MyCount(timeLeft, 1000);
+                                            countDown.start();
+                                            gv.setRoundEnd(false);
+
+                                        } else if (!myPlayer.stillHasShips()) {
+                                            sendEndGame("me");
+                                            endGame("LOST");
+                                        } else if (!opponent.stillHasShips()) {
+                                            sendEndGame("you");
+                                            endGame("WON");
+                                        } else {
+                                            sendEndGame("draw");
+                                            endGame("DREW");
+                                        }
+                                    } else  if (line.startsWith("GAME END")) {
                                         if (line.startsWith("GAME END me")) {
                                             endGame("WON");
                                         } else if (line.startsWith("GAME END you")) {
@@ -569,7 +608,9 @@ public class NewGameActivity extends Activity {
                                         gv.setNoClick(false);
                                         Log.d("Pause", "Play received");
                                     } else if (line.startsWith("{")) {
-                                        String test = null;
+                                        inReceived = true;
+
+                                            String test = null;
                                         try {
                                             opponent.updatePlayer(line);
                                             test = opponent.toJSONString();
@@ -577,31 +618,15 @@ public class NewGameActivity extends Activity {
                                             e.printStackTrace();
                                         }
                                         Log.d("json", test);
+                                        long timeTillLastStep = System.currentTimeMillis();
                                         //TODO draw line and move ships
-                                        while(gv.movesLeft()){
-                                            gv.update();
+                                        while(gv.movesLeft()) {
+                                            if (System.currentTimeMillis() - timeTillLastStep >= 10){
+                                                gv.update();
+                                                timeTillLastStep = System.currentTimeMillis();
+                                            }
                                         }
-
-                                        p.setEnemyScore(myPlayer.getScore());
-                                        p.setMyScore(opponent.getScore());
-
-                                        // check alive
-                                        if (myPlayer.stillHasShips() &&
-                                                opponent.stillHasShips()) {
-                                            timeLeft = 10000;
-                                            countDown = new MyCount(timeLeft, 1000);
-                                            countDown.start();
-
-                                        } else if (!myPlayer.stillHasShips()) {
-                                            sendEndGame("me");
-                                            endGame("LOST");
-                                        } else if (!opponent.stillHasShips()) {
-                                            sendEndGame("you");
-                                            endGame("WON");
-                                        } else {
-                                            sendEndGame("draw");
-                                            endGame("DREW");
-                                        }
+                                        out.print("yolo");
                                     } else if (line.startsWith("Connected")) {
                                         sent.setText(line);
                                         countDown.start();

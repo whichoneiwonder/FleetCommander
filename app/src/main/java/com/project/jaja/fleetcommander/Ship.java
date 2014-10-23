@@ -245,17 +245,13 @@ public class Ship extends GameObject implements Movable, Firing {
      * If we want to reset the player's path, in the case that they want to draw another path,
      * we simply clear the arraylist
      */
-    public void clearAllButHead(){
+    public void clearPath(){
 
         if(xCoords.size() <= 0){
             return;
         }
-        int firstX = xCoords.get(0);
-        int firstY = yCoords.get(0);
         xCoords.clear();
         yCoords.clear();
-        xCoords.add(firstX);
-        yCoords.add(firstY);
     }
 
 //On Move Event Body
@@ -264,7 +260,7 @@ public class Ship extends GameObject implements Movable, Firing {
         //ignore if it's not a move action
 
 
-        if(xCoords.size()>10 ||event.getAction()!= MotionEvent.ACTION_MOVE){
+        if(xCoords.size()>=10 ||event.getAction()!= MotionEvent.ACTION_MOVE){
             return;
         }
 
