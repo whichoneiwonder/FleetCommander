@@ -287,9 +287,14 @@ public class GameView extends SurfaceView {
         enemy.updatePlayerFleet();
 
         ArrayList<GameObject> allShips = new ArrayList<GameObject>();
-        allShips.addAll(me.getFleet());
-        allShips.addAll(enemy.getFleet());
-
+        if(me.getShipColour().equals("red")) {
+            allShips.addAll(me.getFleet());
+            allShips.addAll(enemy.getFleet());
+        } else
+        {
+            allShips.addAll(enemy.getFleet());
+            allShips.addAll(me.getFleet());
+        }
         for(int i = 0; i < allShips.size(); i++) {
 
             Ship ship = (Ship) allShips.get(i);
@@ -305,8 +310,14 @@ public class GameView extends SurfaceView {
         enemy.updatePlayerFleet();
 
         ArrayList<GameObject> allShips = new ArrayList<GameObject>();
-        allShips.addAll(me.getFleet());
-        allShips.addAll(enemy.getFleet());
+        if(me.getShipColour().equals("red")) {
+            allShips.addAll(me.getFleet());
+            allShips.addAll(enemy.getFleet());
+        } else
+        {
+            allShips.addAll(enemy.getFleet());
+            allShips.addAll(me.getFleet());
+        }
 
         for(int i = 0; i < allShips.size(); i++) {
 
@@ -338,8 +349,15 @@ public class GameView extends SurfaceView {
         //Abstract to a function and potentially in the wrong place (should be in ShipSprite)
         //If the ship bounces of an edge it changes direction
         ArrayList<GameObject> allShips = new ArrayList<GameObject>();
-        allShips.addAll(me.getFleet());
-        allShips.addAll(enemy.getFleet());
+        if(me.getShipColour().equals("red")) {
+            allShips.addAll(me.getFleet());
+            allShips.addAll(enemy.getFleet());
+        } else
+        {
+            allShips.addAll(enemy.getFleet());
+            allShips.addAll(me.getFleet());
+        }
+
         for(int i = 0; i < allShips.size(); i++) {
 
             Ship ship = (Ship) allShips.get(i);
@@ -365,7 +383,13 @@ public class GameView extends SurfaceView {
 
                     if (otherShip != null && otherShip.stillAlive()) {
                         ship.detectCollision(otherShip, v);
+
+                        if(!otherShip.getColor().equals(ship.getColor())) {
+                            ship.calculateShootingRange(otherShip, v);
+                        }
                     }
+
+
 
                 }
             }

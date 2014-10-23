@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Html;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -102,6 +103,22 @@ public class StatisticsActivity extends Activity {
     public String readTxt() {
         SharedPreferences settings = getSharedPreferences("fleetCommander", 0);
         return settings.getString("playerStatistics", "");
+//        String result = "";
+//
+//        try {
+//            InputStream stream = getAssets().open("toc.txt");
+//            int size = stream.available();
+//            byte[] buffer = new byte[size];
+//            stream.read(buffer);
+//            stream.close();
+//            result = new String(buffer);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        Log.d("stats", result);
+//
+//        return result;
     }
 
 

@@ -52,11 +52,14 @@ public class Player {
 
     public void updatePlayerFleet(){
         for(int i = 0 ; i < getFleet().size(); i++){
-            Log.d("Ship Position", "Fleet Size: " + getFleet().size() + " Ship X " + i + " : " + getFleet().get(i).getXPosition() + " Ship Y "  + i + " : " + getFleet().get(i).getYPosition());
+            Log.d("Shooting", "" + getFleet().get(i).getHealth());
             if(getFleet().get(i).getHealth() <= 0){
                 //getFleet().remove(i);
                 //i--;
                 getFleet().get(i).setHealth(0);
+                getFleet().get(i).getxCoords().clear();
+                getFleet().get(i).getyCoords().clear();
+                getFleet().get(i).clearPath();
             }
         }
     }

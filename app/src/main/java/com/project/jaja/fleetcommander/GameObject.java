@@ -105,163 +105,165 @@ public class GameObject{
             //While this will always be true for this iteration of the product, it will allow
             //us to easily extend the collision logic to accomodate for cannonballs when they are
             //introduced in version 2
-            if(testObject instanceof Ship){
-                int enemyDirection = ((Ship) testObject).getDirection();
-                int playerDirection = ((Ship) this).getDirection();
-
-                //Case 1: Head on collision, detected by the fact that the two players are facing
-                //complete opposite directions. In this case both players take the the opponents
-                //health as damage. Meaning that whichever player has the highest health will survive
-                //the collision
-                if(Math.abs(enemyDirection - playerDirection) == 4){
-                    this.decreaseHealth(testObject.getHealth());
-                    testObject.decreaseHealth(this.getHealth());
-                }
-
-                //Case 2: Rear end, detected by the fact that the two players are facing the same
-                //direction. In the case of rear-ending the player that got rear-ended is killed
-                //while the player that did the rear-ending doesn't take any damage
-                else if(enemyDirection == playerDirection){
-                    switch(playerDirection){
-                        //Because we need to figure out who did the rear-ending and who was rear-
-                        //ended we need to examine the players directions so we can figure out how
-                        //to determine this. For example, if both players are facing right, eg:
-                        // Ship A -->     Ship B -->
-                        //We can figure out which ship is ship A by comparing their x coordinates.
-                        //The ship with the small x coordinate will be to the left of the other ship
-                        //and thus will be the one rear-ending the other ship.
-
-
-                        //Both ships are facing right, smaller x does damage
-                        case 0:
-                            if(xPosition < enemyX){
-                                testObject.kill();
-                            } else{
-                                this.kill();
-                            }
-                        //Both ships are facing down right, ship with the larger y
-                        case 1:
-                            if(yPosition < enemyY){
-                                this.kill();
-                            } else{
-                                testObject.kill();
-                            }
-                        //Both ships are facing down, larger y does damage
-                        case 2:
-                            if(yPosition < enemyY){
-                                this.kill();
-                            } else{
-                                testObject.kill();
-                            }
-                        //Both ships facing down right, larger y does damage
-                        case 3:
-                            if(yPosition < enemyY){
-                                this.kill();
-                            } else{
-                                testObject.kill();
-                            }
-                        //Both ships are facing left, larger x does damage
-                        case 4:
-                            if(xPosition < enemyX){
-                                this.kill();
-                            } else {
-                                testObject.kill();
-                            }
-                        //Both ships are facing up, ship with smaller y does damage
-                        case 5:
-                            if(yPosition < enemyY){
-                                testObject.kill();
-                            } else{
-                                this.kill();
-                            }
-                        //Both ships are facing up, object with smaller y does damage
-                        case 6:
-                            if(yPosition < enemyY){
-                                testObject.kill();
-                            } else{
-                                this.kill();
-                            }
-                        //Both ships are facing up right, smaller y does damage
-                        case 7:
-                            if(yPosition < enemyY){
-                                testObject.kill();
-                            } else{
-                                this.kill();
-                            }
-                    }
-                }
-                //Case 3: One ship must be T-boning the other. Similar to how rear-ending was dealt
-                //with, the player that is being rear-ended is killed and the player that did the
-                //rear-ending takes no damage. The way that we figure out which player played
-                //which roles is achieved in the exact same fashion to rear-ending except the
-                //directions are different.
-                else{
-                    switch(playerDirection){
-
-                        //Player is facing right, same as left
-                        case 0:
-                            if(yPosition < enemyY){
-                                testObject.kill();
-                            } else{
-                                this.kill();
-                            }
-                        //Player is facing down right, if the enemy has a smaller y or a larger x
-                        case 1:
-                            if(yPosition > enemyY || xPosition < enemyX){
-                                testObject.kill();
-                            } else{
-                                this.kill();
-                            }
-                        //Player is facing down, if enemy y is less than player y then the enemy
-                        // takes damage
-                        case 2:
-                            if(yPosition < enemyY){
-                                this.kill();
-                            } else{
-                                testObject.kill();
-                            }
-
-                        //Player is facing down-left, player with the smaller y or smaller x
-                        case 3:
-                            if(yPosition > enemyY || xPosition > enemyX){
-                                testObject.kill();
-                            } else{
-                                this.kill();
-                            }
-                        //Player is facing left, larger y
-                        case 4:
-                            if(yPosition < enemyY){
-                                testObject.kill();
-                            } else{
-                                this.kill();
-                            }
-                        //Player is facing up left, smaller x or larger y
-                        case 5:
-                            if(xPosition > enemyX || yPosition < enemyY){
-                                testObject.kill();
-                            } else{
-                                this.kill();
-                            }
-                        //Player is facing up, thus if the enemy y is greater than
-                        //the player y we know that the player is t-boning the enemy
-                        case 6:
-                            if(yPosition < enemyY){
-                                testObject.kill();
-                            } else{
-                                this.kill();
-                            }
-                        //Player is facing up right, larger x or larger y takes damage
-                        case 7:
-                            if(yPosition < enemyY || xPosition < enemyX){
-                                testObject.kill();
-                            } else{
-                                this.kill();
-                            }
-                    }
-
-                }
-
-            }
+//            if(testObject instanceof Ship){
+//                int enemyDirection = ((Ship) testObject).getDirection();
+//                int playerDirection = ((Ship) this).getDirection();
+//
+//                //Case 1: Head on collision, detected by the fact that the two players are facing
+//                //complete opposite directions. In this case both players take the the opponents
+//                //health as damage. Meaning that whichever player has the highest health will survive
+//                //the collision
+//                if(Math.abs(enemyDirection - playerDirection) == 4){
+//                    this.kill();
+//                    testObject.kill();
+//                }
+//
+//                //Case 2: Rear end, detected by the fact that the two players are facing the same
+//                //direction. In the case of rear-ending the player that got rear-ended is killed
+//                //while the player that did the rear-ending doesn't take any damage
+//                else if(enemyDirection == playerDirection){
+//                    switch(playerDirection){
+//                        //Because we need to figure out who did the rear-ending and who was rear-
+//                        //ended we need to examine the players directions so we can figure out how
+//                        //to determine this. For example, if both players are facing right, eg:
+//                        // Ship A -->     Ship B -->
+//                        //We can figure out which ship is ship A by comparing their x coordinates.
+//                        //The ship with the small x coordinate will be to the left of the other ship
+//                        //and thus will be the one rear-ending the other ship.
+//
+//
+//                        //Both ships are facing right, smaller x does damage
+//                        case 0:
+//                            if(xPosition < enemyX){
+//                                testObject.kill();
+//                            } else{
+//                                this.kill();
+//                            }
+//                        //Both ships are facing down right, ship with the larger y
+//                        case 1:
+//                            if(yPosition < enemyY){
+//                                this.kill();
+//                            } else{
+//                                testObject.kill();
+//                            }
+//                        //Both ships are facing down, larger y does damage
+//                        case 2:
+//                            if(yPosition < enemyY){
+//                                this.kill();
+//                            } else{
+//                                testObject.kill();
+//                            }
+//                        //Both ships facing down right, larger y does damage
+//                        case 3:
+//                            if(yPosition < enemyY){
+//                                this.kill();
+//                            } else{
+//                                testObject.kill();
+//                            }
+//                        //Both ships are facing left, larger x does damage
+//                        case 4:
+//                            if(xPosition < enemyX){
+//                                this.kill();
+//                            } else {
+//                                testObject.kill();
+//                            }
+//                        //Both ships are facing up, ship with smaller y does damage
+//                        case 5:
+//                            if(yPosition < enemyY){
+//                                testObject.kill();
+//                            } else{
+//                                this.kill();
+//                            }
+//                        //Both ships are facing up, object with smaller y does damage
+//                        case 6:
+//                            if(yPosition < enemyY){
+//                                testObject.kill();
+//                            } else{
+//                                this.kill();
+//                            }
+//                        //Both ships are facing up right, smaller y does damage
+//                        case 7:
+//                            if(yPosition < enemyY){
+//                                testObject.kill();
+//                            } else{
+//                                this.kill();
+//                            }
+//                    }
+//                }
+//                //Case 3: One ship must be T-boning the other. Similar to how rear-ending was dealt
+//                //with, the player that is being rear-ended is killed and the player that did the
+//                //rear-ending takes no damage. The way that we figure out which player played
+//                //which roles is achieved in the exact same fashion to rear-ending except the
+//                //directions are different.
+//                else{
+//                    switch(playerDirection){
+//
+//                        //Player is facing right, same as left
+//                        case 0:
+//                            if(yPosition < enemyY){
+//                                testObject.kill();
+//                            } else{
+//                                this.kill();
+//                            }
+//                        //Player is facing down right, if the enemy has a smaller y or a larger x
+//                        case 1:
+//                            if(yPosition > enemyY || xPosition < enemyX){
+//                                testObject.kill();
+//                            } else{
+//                                this.kill();
+//                            }
+//                        //Player is facing down, if enemy y is less than player y then the enemy
+//                        // takes damage
+//                        case 2:
+//                            if(yPosition < enemyY){
+//                                this.kill();
+//                            } else{
+//                                testObject.kill();
+//                            }
+//
+//                        //Player is facing down-left, player with the smaller y or smaller x
+//                        case 3:
+//                            if(yPosition > enemyY || xPosition > enemyX){
+//                                testObject.kill();
+//                            } else{
+//                                this.kill();
+//                            }
+//                        //Player is facing left, larger y
+//                        case 4:
+//                            if(yPosition < enemyY){
+//                                testObject.kill();
+//                            } else{
+//                                this.kill();
+//                            }
+//                        //Player is facing up left, smaller x or larger y
+//                        case 5:
+//                            if(xPosition > enemyX || yPosition < enemyY){
+//                                testObject.kill();
+//                            } else{
+//                                this.kill();
+//                            }
+//                        //Player is facing up, thus if the enemy y is greater than
+//                        //the player y we know that the player is t-boning the enemy
+//                        case 6:
+//                            if(yPosition < enemyY){
+//                                testObject.kill();
+//                            } else{
+//                                this.kill();
+//                            }
+//                        //Player is facing up right, larger x or larger y takes damage
+//                        case 7:
+//                            if(yPosition < enemyY || xPosition < enemyX){
+//                                testObject.kill();
+//                            } else{
+//                                this.kill();
+//                            }
+//                    }
+//
+//                }
+//
+//            }
+            this.kill();
+            testObject.kill();
             return true;
         } else {
             return false;

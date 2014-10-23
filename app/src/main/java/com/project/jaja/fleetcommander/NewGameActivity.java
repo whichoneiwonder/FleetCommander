@@ -11,6 +11,7 @@ import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -273,7 +274,7 @@ public class NewGameActivity extends Activity {
          * @param user User that lost
          */
         public void sendEndGame(String user) {
-            final String result = "GAME END" + user;
+            final String result = "GAME END " + user;
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -287,26 +288,35 @@ public class NewGameActivity extends Activity {
          * @param result Result of this game
          */
         public void endGame(String result) {
-            Toast.makeText(getApplicationContext(), "YOU " + result, Toast.LENGTH_SHORT).show();
-            Statistic stat = new Statistic(0, 0);
+            Toast.makeText(getApplicationContext(), "YOU " + result, Toast.LENGTH_LONG).show();
+            Statistic stat = new Statistic(opponent.getScore(), myPlayer.getScore());
 
-            //Updating the player statistics
+//            Updating the statistics
             stats.addStatistics(opponent.getMacAddress(), stat);
 
-            //Writing the statistics to shared preferences
+            //Writing the statistics to sharedPreferences
             try {
                 SharedPreferences settings = getSharedPreferences("fleetCommander", 0);
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("playerStatistics", stats.toJSONString());
                 editor.commit();
             } catch(JSONException e){
-                Log.e("Reading player stats", e.toString());
+                Log.e("Writing player stats", e.toString());
             }
 
             // Go back to home
-            closeSockets();
             intent = new Intent(getApplicationContext(), MainActivity.class);
+            sendCloseSocket();
             startActivity(intent);
+        }
+
+        public  void sendCloseSocket() {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    out.println("close");
+                }
+            });
         }
 
         public void run() {
@@ -342,6 +352,11 @@ public class NewGameActivity extends Activity {
                                 public void run() {
                                     sent.setText("Connected to " + CLIENTIP);
                                     out.println("Connected to " + SERVERIP);
+                                    Toast toast = Toast.makeText(getApplicationContext(),
+                                            "You are playing as " + myPlayer.getShipColour(),
+                                            Toast.LENGTH_LONG);
+                                    toast.setGravity(Gravity.CENTER, 0, 0);
+                                    toast.show();
                                     countDown.start();
                                     setContentView(gv);
                                 }
@@ -355,7 +370,9 @@ public class NewGameActivity extends Activity {
                                     @Override
                                     public void run() {
                                         if (line != null) {
-                                            if (line.startsWith("yolo")) {
+                                            if (line.startsWith("close")) {
+                                                closeSockets();
+                                            } else if (line.startsWith("yolo")) {
                                                 p.setEnemyScore(myPlayer.getScore());
                                                 p.setMyScore(opponent.getScore());
 
@@ -367,15 +384,23 @@ public class NewGameActivity extends Activity {
                                                     countDown.start();
                                                     gv.setRoundEnd(false);
 
-                                                } else if (!myPlayer.stillHasShips()) {
-                                                    sendEndGame("me");
-                                                    endGame("LOST");
+                                                } else if (!myPlayer.stillHasShips() && !opponent.stillHasShips()) {
+                                                    if (myPlayer.getScore() > opponent.getScore()) {
+                                                        sendEndGame("you");
+                                                        endGame("WON");
+                                                    } else if (myPlayer.getScore() < opponent.getScore()) {
+                                                        sendEndGame("me");
+                                                        endGame("LOST");
+                                                    } else {
+                                                        sendEndGame("draw");
+                                                        endGame("DREW");
+                                                    }
                                                 } else if (!opponent.stillHasShips()) {
                                                     sendEndGame("you");
                                                     endGame("WON");
                                                 } else {
-                                                    sendEndGame("draw");
-                                                    endGame("DREW");
+                                                    sendEndGame("me");
+                                                    endGame("LOST");
                                                 }
 
                                             } else if (line.startsWith("ack")) {
@@ -410,7 +435,7 @@ public class NewGameActivity extends Activity {
                                                 Log.d("json", test);
                                                 long timeTillLastStep = System.currentTimeMillis();
                                                 //TODO draw line and move ships
-                                                while(gv.movesLeft()) {
+                                                while(gv.movesLeft() && !p.isPaused()) {
                                                     if (System.currentTimeMillis() - timeTillLastStep >= 10){
                                                         gv.update();
                                                         timeTillLastStep = System.currentTimeMillis();
@@ -441,13 +466,8 @@ public class NewGameActivity extends Activity {
                     });
                 }
             } catch (Exception e) {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        sent.setText("Error");
-                    }
-                });
-                e.printStackTrace();
+                intent = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(intent);
             }
         }
     }
@@ -511,7 +531,7 @@ public class NewGameActivity extends Activity {
          * @param user User that lost
          */
         public void sendEndGame(String user) {
-            final String result = "GAME END" + user;
+            final String result = "GAME END " + user;
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -525,10 +545,10 @@ public class NewGameActivity extends Activity {
          * @param result Result of this game
          */
         public void endGame(String result) {
-            Toast.makeText(getApplicationContext(), "YOU " + result, Toast.LENGTH_SHORT).show();
-            Statistic stat = new Statistic(0, 0);
+            Toast.makeText(getApplicationContext(), "YOU " + result, Toast.LENGTH_LONG).show();
+            Statistic stat = new Statistic(opponent.getScore(), myPlayer.getScore());
 
-            //Updating the statistics
+//            Updating the statistics
             stats.addStatistics(opponent.getMacAddress(), stat);
 
             //Writing the statistics to sharedPreferences
@@ -538,13 +558,22 @@ public class NewGameActivity extends Activity {
                 editor.putString("playerStatistics", stats.toJSONString());
                 editor.commit();
             } catch(JSONException e){
-                Log.e("Reading player stats", e.toString());
+                Log.e("Writing player stats", e.toString());
             }
 
             // Go back to home
-            closeSockets();
             intent = new Intent(getApplicationContext(), MainActivity.class);
+            sendCloseSocket();
             startActivity(intent);
+        }
+
+        public  void sendCloseSocket() {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    out.println("close");
+                }
+            });
         }
 
         public void run() {
@@ -564,7 +593,9 @@ public class NewGameActivity extends Activity {
                             @Override
                             public void run() {
                                 if (line != null) {
-                                    if (line.startsWith("yolo")) {
+                                    if (line.startsWith("close")) {
+                                        closeSockets();
+                                    } else if (line.startsWith("yolo")) {
                                         out.println("yolo");
 
                                         p.setEnemyScore(myPlayer.getScore());
@@ -577,15 +608,23 @@ public class NewGameActivity extends Activity {
                                             countDown.start();
                                             gv.setRoundEnd(false);
 
-                                        } else if (!myPlayer.stillHasShips()) {
-                                            sendEndGame("me");
-                                            endGame("LOST");
+                                        } else if (!myPlayer.stillHasShips() && !opponent.stillHasShips()) {
+                                            if (myPlayer.getScore() > opponent.getScore()) {
+                                                sendEndGame("you");
+                                                endGame("WON");
+                                            } else if (myPlayer.getScore() < opponent.getScore()) {
+                                                sendEndGame("me");
+                                                endGame("LOST");
+                                            } else {
+                                                sendEndGame("draw");
+                                                endGame("DREW");
+                                            }
                                         } else if (!opponent.stillHasShips()) {
                                             sendEndGame("you");
                                             endGame("WON");
                                         } else {
-                                            sendEndGame("draw");
-                                            endGame("DREW");
+                                            sendEndGame("me");
+                                            endGame("LOST");
                                         }
                                     } else  if (line.startsWith("GAME END")) {
                                         if (line.startsWith("GAME END me")) {
@@ -595,7 +634,6 @@ public class NewGameActivity extends Activity {
                                         } else {
                                             endGame("DREW");
                                         }
-                                        connected = false;
                                     } else if (line.startsWith("PAUSE")) {
                                         countDown.cancel();
                                         gv.getPanel().setPause(!p.isPaused());
@@ -620,7 +658,7 @@ public class NewGameActivity extends Activity {
                                         Log.d("json", test);
                                         long timeTillLastStep = System.currentTimeMillis();
                                         //TODO draw line and move ships
-                                        while(gv.movesLeft()) {
+                                        while(gv.movesLeft() && !p.isPaused()) {
                                             if (System.currentTimeMillis() - timeTillLastStep >= 10){
                                                 gv.update();
                                                 timeTillLastStep = System.currentTimeMillis();
@@ -629,6 +667,11 @@ public class NewGameActivity extends Activity {
                                         out.print("yolo");
                                     } else if (line.startsWith("Connected")) {
                                         sent.setText(line);
+                                        Toast toast = Toast.makeText(getApplicationContext(),
+                                                "You are playing as " + myPlayer.getShipColour(),
+                                                Toast.LENGTH_LONG);
+                                        toast.setGravity(Gravity.CENTER, 0, 0);
+                                        toast.show();
                                         countDown.start();
                                         setContentView(gv);
                                     }
@@ -637,13 +680,8 @@ public class NewGameActivity extends Activity {
                         });
                     }
                 } catch (Exception e) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            sent.setText("except");
-                        }
-                    });
-                    Log.e("ClientActivity", "S: Error", e);
+                    intent = new Intent(getApplicationContext(), MainActivity.class);
+                    startActivity(intent);
                 }
 
             } catch (Exception e) {

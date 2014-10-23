@@ -361,11 +361,11 @@ public class Ship extends GameObject implements Movable, Firing {
     public void calculateShootingRange(GameObject target, Vibrator v){
 
         //We first figure out which gridspaces the player and enemy ships occupy
-        int playerX = gameView.getMappedScreenX(xPosition);
-        int playerY = gameView.getMappedScreenY(yPosition);
+        int playerX = gameView.getGridXFromScreenX(xPosition);
+        int playerY = gameView.getGridYFromScreenY(yPosition);
 
-        int enemyX = gameView.getMappedScreenX(target.getxPosition());
-        int enemyY  = gameView.getMappedScreenY(target.getyPosition());
+        int enemyX = gameView.getGridXFromScreenX(target.getxPosition());
+        int enemyY  = gameView.getGridYFromScreenY(target.getyPosition());
 
         //Then we calculate how many grid spaces they are apart
         double xDistance = Math.abs(playerX - enemyX);
@@ -375,13 +375,13 @@ public class Ship extends GameObject implements Movable, Firing {
         //be for the enemy ship to be in range
         if(this.direction == 0 || this.direction == 4){
             //Ship is facing left or right, thus we want large y small x
-            if(yDistance < 10 && xDistance < 3){
+            if(yDistance <= 2 && xDistance <= 1){
                 Log.d("Shooting", "Something is being shot");
                 shoot(target, v);
             }
         } else if(this.direction == 2 || this.direction == 6){
             //Ship is facing up or down, thus we want large x and small y
-            if(xDistance < 10 && yDistance < 3){
+            if(xDistance <= 2 && yDistance <= 1){
                 Log.d("Shooting", "Something is being shot");
                 shoot(target, v);
             }

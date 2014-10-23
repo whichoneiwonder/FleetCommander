@@ -14,14 +14,7 @@ import java.util.Map;
  */
 public class Statistics {
     // Statistic HashMap with the key being a MAC Address
-    private Map<String, ArrayList<Statistic>> stats = new HashMap<String, ArrayList<Statistic>>();
-
-    /**
-     * Constructs an empty HashMap. This is only executed for a brand new instance of the app
-     * where no games have been played at all. Typically, there will be some amount of data already
-     * on the phone
-     */
-    public Statistics() {}
+    private Map<String, ArrayList<Statistic>> stats;
 
     /**
      * Constructs a Statistics HashMap using JSON data. This is so that data passed between
@@ -31,29 +24,34 @@ public class Statistics {
      * @throws JSONException
      */
     public Statistics(String jsonData) throws JSONException {
-        JSONObject data = new JSONObject(jsonData);
+        stats = new HashMap<String, ArrayList<Statistic>>();
 
-        Iterator<String> keys = data.keys();
-        while (keys.hasNext()) {
-            String mac = keys.next();
-            JSONArray statsListJSON = data.getJSONArray(mac);
-            ArrayList<Statistic> statsList = new ArrayList<Statistic>();
+        if (!jsonData.equals("")) {
 
-            for (int i = 0; i < statsListJSON.length(); i++) {
-                JSONObject entry = statsListJSON.getJSONObject(i);
+            JSONObject data = new JSONObject(jsonData);
 
-                //Getting the necessary score information from the JSON data
-                int myScore = entry.getInt("myScore");
-                int opponentScore = entry.getInt("opponentScore");
-                String dateTime = entry.getString("dateTime");
+            Iterator<String> keys = data.keys();
+            while (keys.hasNext()) {
+                String mac = keys.next();
+                JSONArray statsListJSON = data.getJSONArray(mac);
+                ArrayList<Statistic> statsList = new ArrayList<Statistic>();
 
-                //Converting the JSON information into a statistics object
-                Statistic stat = new Statistic(myScore, opponentScore, dateTime);
+                for (int i = 0; i < statsListJSON.length(); i++) {
+                    JSONObject entry = statsListJSON.getJSONObject(i);
 
-                statsList.add(stat);
+                    //Getting the necessary score information from the JSON data
+                    int myScore = entry.getInt("myScore");
+                    int opponentScore = entry.getInt("opponentScore");
+                    String dateTime = entry.getString("dateTime");
+
+                    //Converting the JSON information into a statistics object
+                    Statistic stat = new Statistic(myScore, opponentScore, dateTime);
+
+                    statsList.add(stat);
+                }
+
+                stats.put(mac, statsList);
             }
-
-            stats.put(mac, statsList);
         }
     }
 
