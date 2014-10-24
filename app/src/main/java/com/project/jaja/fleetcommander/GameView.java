@@ -372,6 +372,7 @@ public class GameView extends SurfaceView {
 
                 //This will eventually be looping through all GameObjects, not just ships
 
+
                 for (int j = 0; j < allShips.size(); j++) {
                     Ship otherShip = null;
                     if (i != j) {
@@ -384,7 +385,7 @@ public class GameView extends SurfaceView {
                     if (otherShip != null && otherShip.stillAlive()) {
                         ship.detectCollision(otherShip, v);
 
-                        if(!otherShip.getColor().equals(ship.getColor())) {
+                        if(  !otherShip.getColor().equals(ship.getColor())) {
                             ship.calculateShootingRange(otherShip, v);
                         }
                     }

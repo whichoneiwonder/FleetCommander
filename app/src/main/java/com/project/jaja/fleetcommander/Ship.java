@@ -64,6 +64,7 @@ public class Ship extends GameObject implements Movable, Firing {
         path = new Path();
         this.panel = panel;
 
+
         // set position by input
         this.xPosition = xPosition;
         this.yPosition = yPosition;
@@ -174,6 +175,7 @@ public class Ship extends GameObject implements Movable, Firing {
             //If the ship is at the next point referenced in the xCoords and yCoords arraylist
             //then we no longer need to keep track of that coordinate
             if(Math.abs(centreX - firstScreenX) <1 && Math.abs(centreY - firstScreenY) <1){
+
                xCoords.remove(0);
                yCoords.remove(0);
             }
@@ -348,7 +350,11 @@ public class Ship extends GameObject implements Movable, Firing {
     //Methods implemented from the Firing interface
     @Override
     public void shoot(GameObject target, Vibrator v){
+
+
         target.decreaseHealth(SHOOTING_DAMAGE);
+
+
         v.vibrate(100);
     }
 
@@ -375,13 +381,13 @@ public class Ship extends GameObject implements Movable, Firing {
         //be for the enemy ship to be in range
         if(this.direction == 0 || this.direction == 4){
             //Ship is facing left or right, thus we want large y small x
-            if(yDistance <= 2 && xDistance <= 1){
+            if(yDistance <= 2 &&yDistance >0 && xDistance <= 1){
                 Log.d("Shooting", "Something is being shot");
                 shoot(target, v);
             }
         } else if(this.direction == 2 || this.direction == 6){
             //Ship is facing up or down, thus we want large x and small y
-            if(xDistance <= 2 && yDistance <= 1){
+            if(xDistance <= 2 && xDistance >0&& yDistance <= 1){
                 Log.d("Shooting", "Something is being shot");
                 shoot(target, v);
             }

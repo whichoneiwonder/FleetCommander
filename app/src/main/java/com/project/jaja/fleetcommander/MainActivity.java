@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+import android.widget.ImageView;
 
 import com.project.jaja.fleetcommander.util.SystemUiHider;
 
@@ -47,10 +48,13 @@ public class MainActivity extends Activity {
     // The statistics for all the games this Player has played
     private Statistics stats;
 
+    private ImageView image;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        image = (ImageView) findViewById(R.id.fleet_commander_logo);
     }
 
 
