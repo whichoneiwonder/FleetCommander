@@ -336,7 +336,7 @@ public class GameView extends SurfaceView {
      *
      * @param canvas -> Canvas to render images on
      */
-    protected void onDraw(Canvas canvas){
+    protected void onGameViewDraw(Canvas canvas){
         //Sets the background to the RGB Value
         me.updatePlayerFleet();
         enemy.updatePlayerFleet();
