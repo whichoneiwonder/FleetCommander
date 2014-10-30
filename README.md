@@ -13,7 +13,7 @@ The project has been set-up using Android studio, and thus the steps to get set 
 
 -"git remote add origin https://jmclaren_unimelb@bitbucket.org/14comp30022/fleet-commander.git"
 
--"git pull -u origin development"
+-"git pull -u origin master"
 
 **Via Android Studio:**
 
@@ -25,7 +25,7 @@ The project has been set-up using Android studio, and thus the steps to get set 
 
 To then build the project you can click the green play button in the top menu bar or use the keyboard shortcut shift + f10. (If you want to run the device on a physical device ensure that you have the appropriate drivers installed and have USB debugging enabled on the target device)
 
-[Note that master branch shall be maintained as the most recent working version of the project (initial build at the moment) with merges only being made from development once significant milestones have been reached.]
+[Note that master branch shall be maintained as the most recent working version of the project with merges only being made from development once significant milestones have been reached.]
 
 **To test project**
 
@@ -33,4 +33,4 @@ To then build the project you can click the green play button in the top menu ba
 
 -Where you usually run 'app' from, select PlayerTest from the dropdown list and execute PlayerTest
 
--More tests will be added as required
+-Add more tests as required
