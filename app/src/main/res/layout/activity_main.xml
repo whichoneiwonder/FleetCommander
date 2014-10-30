@@ -41,15 +41,44 @@
                 android:text="@string/p2p_button"
                 android:onClick="goToP2P" />
 
+           <!-- <Button android:id="@+id/test_button"
+                style="?metaButtonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/title_activity_test"
+                android:onClick="goToTestActivity" /> -->
+
         </LinearLayout>
 
-        <Button
+        <!--<Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/new_game"
             android:id="@+id/new_game"
             android:layout_gravity="center"
-            android:onClick="goToNewGame"/>
+            android:onClick="goToNewGame"/> -->
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:text="Statistics"
+            android:id="@+id/statistics"
+            android:layout_gravity="left|top"
+            android:onClick="goToStatistics" />
+
+        <TableRow
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center">
+            <ImageView
+                android:id="@+id/fleet_commander_logo"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:src="@drawable/fleet_commander"
+                android:layout_gravity="center_vertical" />
+        </TableRow>
     </FrameLayout>
 
 </FrameLayout>
